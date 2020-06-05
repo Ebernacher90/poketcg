@@ -7,7 +7,7 @@ CheckText: ; 36310 (d:6310)
 	done
 
 AttackText: ; 36317 (d:6317)
-	text "Attack"
+	text "Angriff"
 	done
 
 PKMNPowerText: ; 3631f (d:631f)
@@ -15,23 +15,23 @@ PKMNPowerText: ; 3631f (d:631f)
 	done
 
 DoneText: ; 3632b (d:632b)
-	text "Done"
+	text "Fertig"
 	done
 
 TypeText: ; 36331 (d:6331)
-	text "Type"
+	text "Typ"
 	done
 
 RetreatText: ; 36337 (d:6337)
-	text "Retreat"
+	text "Rückzug"
 	done
 
 WeaknessText: ; 36340 (d:6340)
-	text "Weakness"
+	text "Schwäche"
 	done
 
 ResistanceText: ; 3634a (d:634a)
-	text "Resistance"
+	text "Resistenz"
 	done
 
 PKMNPWRText: ; 36356 (d:6356)
@@ -43,11 +43,11 @@ Text000b: ; 36360 (d:6360)
 	done
 
 LengthText: ; 36368 (d:6368)
-	text "Length"
+	text "Größe"
 	done
 
 WeightText: ; 36370 (d:6370)
-	text "Weight"
+	text "Gewicht"
 	done
 
 PokemonText: ; 36378 (d:6378)
@@ -55,11 +55,11 @@ PokemonText: ; 36378 (d:6378)
 	done
 
 MetresText: ; 36382 (d:6382)
-	textfw3 "m"
+	textfw3 "M"
 	done
 
 LbsText: ; 36385 (d:6385)
-	text "lbs."
+	text "KG."
 	done
 
 PromostarRarityText: ; 3638b (d:638b)
