@@ -4,7 +4,7 @@ Func_70000: ; 70000 (1c:4000)
 	ret nz
 	ld b, $1
 	ld a, $22
-	farcall CheckIfEventFlagSet
+	farcall GetEventFlagValue
 	or a
 	jr z, .asm_70013
 	ld b, $2
@@ -20,7 +20,6 @@ Func_70018: ; 70018 (1c:4018)
 	ld a, $0
 	call Func_70044
 	ret
-; 0x70024
 
 AtrcEnPacket_Disable: ; 70024 (1c:4024)
 	sgb ATRC_EN, 1 ; sgb_command, length
@@ -294,7 +293,7 @@ Func_70214: ; 70214 (1c:4214)
 	ret nz
 	ld hl, Unknown_7024a
 	ld a, $10
-	farcall CheckIfEventFlagSet
+	farcall GetEventFlagValue
 	ld c, $8
 .asm_70227
 	push bc

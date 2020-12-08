@@ -1,97 +1,55 @@
-PointerTable_14000: ; 14000 (05:4000)
-	dw $47bd ; SAMS_PRACTICE_DECK
-	dw PointerTable_14668 ; PRACTICE_PLAYER_DECK
-	dw PointerTable_14668 ; SAMS_NORMAL_DECK
-	dw PointerTable_14668 ; CHARMANDER_AND_FRIENDS_DECK
-	dw PointerTable_14668 ; CHARMANDER_EXTRA_DECK
-	dw PointerTable_14668 ; SQUIRTLE_AND_FRIENDS_DECK
-	dw PointerTable_14668 ; SQUIRTLE_EXTRA_DECK
-	dw PointerTable_14668 ; BULBASAUR_AND_FRIENDS_DECK
-	dw PointerTable_14668 ; BULBASAUR_EXTRA_DECK
-	dw PointerTable_14668 ; LIGHTNING_AND_FIRE_DECK
-	dw PointerTable_14668 ; WATER_AND_FIGHTING_DECK
-	dw PointerTable_14668 ; GRASS_AND_PSYCHIC_DECK
-	dw $49e8 ; LEGENDARY_MOLTRES_DECK
-	dw $4b0f ; LEGENDARY_ZAPDOS_DECK
-	dw $4c0b ; LEGENDARY_ARTICUNO_DECK
-	dw $4d60 ; LEGENDARY_DRAGONITE_DECK
-	dw $4e89 ; FIRST_STRIKE_DECK
-	dw $4f0e ; ROCK_CRUSHER_DECK
-	dw $4f8f ; GO_GO_RAIN_DANCE_DECK
-	dw $5019 ; ZAPPING_SELFDESTRUCT_DECK
-	dw $509b ; FLOWER_POWER_DECK
-	dw $5122 ; STRANGE_PSYSHOCK_DECK
-	dw $51ad ; WONDERS_OF_SCIENCE_DECK
-	dw $5232 ; FIRE_CHARGE_DECK
-	dw $52bd ; IM_RONALD_DECK
-	dw $534b ; POWERFUL_RONALD_DECK
-	dw $53e8 ; INVINCIBLE_RONALD_DECK
-	dw $546f ; LEGENDARY_RONALD_DECK
-	dw $48dc ; MUSCLES_FOR_BRAINS_DECK
-	dw PointerTable_14668 ; HEATED_BATTLE_DECK
-	dw PointerTable_14668 ; LOVE_TO_BATTLE_DECK
-	dw PointerTable_14668 ; EXCAVATION_DECK
-	dw PointerTable_14668 ; BLISTERING_POKEMON_DECK
-	dw PointerTable_14668 ; HARD_POKEMON_DECK
-	dw PointerTable_14668 ; WATERFRONT_POKEMON_DECK
-	dw PointerTable_14668 ; LONELY_FRIENDS_DECK
-	dw PointerTable_14668 ; SOUND_OF_THE_WAVES_DECK
-	dw PointerTable_14668 ; PIKACHU_DECK
-	dw PointerTable_14668 ; BOOM_BOOM_SELFDESTRUCT_DECK
-	dw PointerTable_14668 ; POWER_GENERATOR_DECK
-	dw PointerTable_14668 ; ETCETERA_DECK
-	dw PointerTable_14668 ; FLOWER_GARDEN_DECK
-	dw PointerTable_14668 ; KALEIDOSCOPE_DECK
-	dw PointerTable_14668 ; GHOST_DECK
-	dw PointerTable_14668 ; NAP_TIME_DECK
-	dw PointerTable_14668 ; STRANGE_POWER_DECK
-	dw PointerTable_14668 ; FLYIN_POKEMON_DECK
-	dw PointerTable_14668 ; LOVELY_NIDORAN_DECK
-	dw PointerTable_14668 ; POISON_DECK
-	dw PointerTable_14668 ; ANGER_DECK
-	dw PointerTable_14668 ; FLAMETHROWER_DECK
-	dw PointerTable_14668 ; RESHUFFLE_DECK
-	dw $48dc ; IMAKUNI_DECK
-; 1406a
+INCLUDE "data/deck_ai_pointers.asm"
 
-PointerTable_1406a: ; 1406a (5:406a)
+AIActionTable_Unreferenced: ; 1406a (5:406a)
 	dw $406c
-	dw Func_14078
-	dw Func_14078
-	dw Func_1409e
-	dw $40a2
-	dw $40a6
-	dw $40aa
+	dw .do_turn
+	dw .do_turn
+	dw .star_duel
+	dw .forced_switch
+	dw .ko_switch
+	dw .take_prize
 
-Func_14078: ; 14078 (5:4078)
+.do_turn ; 14078 (5:4078)
 	call AIDecidePlayPokemonCard
 	call AIDecideWhetherToRetreat
-	jr nc, .asm_14091
+	jr nc, .try_attack
 	call AIDecideBenchPokemonToSwitchTo
-	call AIChooseEnergyToDiscardForRetreatCost
+	call AITryToRetreat
 	call AIDecideWhetherToRetreat
-	jr nc, .asm_14091
+	jr nc, .try_attack
 	call AIDecideBenchPokemonToSwitchTo
-	call AIChooseEnergyToDiscardForRetreatCost
-.asm_14091
-	call AIDecidePlayEnergyCardFromHand
-	call Func_169f8
+	call AITryToRetreat
+.try_attack
+	call AIProcessAndTryToPlayEnergy
+	call AIProcessAndTryToUseAttack
 	ret c
 	ld a, OPPACTION_FINISH_NO_ATTACK
 	bank1call AIMakeDecision
 	ret
-; 0x1409e
 
-Func_1409e: ; 1409e (5:409e)
-	INCROM $1409e, $140ae
+.star_duel ; 1409e (5:409e)
+	call AIPlayInitialBasicCards
+	ret
+
+.forced_switch ; 140a2 (5:40a2)
+	call AIDecideBenchPokemonToSwitchTo
+	ret
+
+.ko_switch ; 140a6 (5:40a6)
+	call AIDecideBenchPokemonToSwitchTo
+	ret
+
+.take_prize ; 140aa (5:40aa)
+	call AIPickPrizeCards
+	ret
 
 ; returns carry if damage dealt from any of
 ; a card's moves KOs defending Pokémon
 ; outputs index of the move that KOs
 ; input:
-; 	[hTempPlayAreaLocation_ff9d] = location of attacking card to consider
+;	[hTempPlayAreaLocation_ff9d] = location of attacking card to consider
 ; output:
-; 	[wSelectedAttack] = move index that KOs
+;	[wSelectedAttack] = move index that KOs
 CheckIfAnyMoveKnocksOutDefendingCard: ; 140ae (5:40ae)
 	xor a ; first move
 	call CheckIfMoveKnocksOutDefendingCard
@@ -109,7 +67,6 @@ CheckIfMoveKnocksOutDefendingCard: ; 140b5 (5:40b5)
 	ret nz
 	scf
 	ret
-; 0x140c5
 
 ; returns carry if any of the defending Pokémon's attacks
 ; brings card at hTempPlayAreaLocation_ff9d down
@@ -133,11 +90,10 @@ CheckIfAnyDefendingPokemonAttackDealsSameDamageAsHP: ; 140c5 (5:40c5)
 .true
 	scf
 	ret
-; 0x140df
 
 ; checks AI scores for all benched Pokémon
 ; returns the location of the card with highest score
-; in hTempPlayAreaLocation_ff9d
+; in a and [hTempPlayAreaLocation_ff9d]
 FindHighestBenchScore: ; 140df (5:40df)
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
@@ -163,12 +119,11 @@ FindHighestBenchScore: ; 140df (5:40df)
 	ldh [hTempPlayAreaLocation_ff9d], a
 	or a
 	ret
-; 0x140fe
 
 ; adds a to wAIScore
 ; if there's overflow, it's capped at $ff
 ; output:
-; 	a = a + wAIScore (capped at $ff)
+;	a = a + wAIScore (capped at $ff)
 AddToAIScore: ; 140fe (5:40fe)
 	push hl
 	ld hl, wAIScore
@@ -179,7 +134,6 @@ AddToAIScore: ; 140fe (5:40fe)
 	ld [hl], a
 	pop hl
 	ret
-; 0x1410a
 
 ; subs a from wAIScore
 ; if there's underflow, it's capped at $00
@@ -199,7 +153,6 @@ SubFromAIScore: ; 1410a (5:410a)
 	pop de
 	pop hl
 	ret
-; 0x1411d
 
 ; loads defending Pokémon's weakness/resistance
 ; and the number of prize cards in both sides
@@ -218,10 +171,44 @@ LoadDefendingPokemonColorWRAndPrizeCards: ; 1411d (5:411d)
 	call CountPrizes
 	ld [wAIOpponentPrizeCount], a
 	ret
-; 0x14145
 
-Func_14145: ; 14145 (5:4145)
-	INCROM $14145, $14184
+; called when AI has chosen its attack.
+; executes all effects and damage.
+; handles AI choosing parameters for certain attacks as well.
+AITryUseAttack: ; 14145 (5:4145)
+	ld a, [wSelectedAttack]
+	ldh [hTemp_ffa0], a
+	ld e, a
+	ld a, DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	ldh [hTempCardIndex_ff9f], a
+	ld d, a
+	call CopyMoveDataAndDamage_FromDeckIndex
+	ld a, OPPACTION_BEGIN_ATTACK
+	bank1call AIMakeDecision
+	ret c
+
+	call AISelectSpecialAttackParameters
+	jr c, .use_attack
+	ld a, OPPACTION_BEGIN_ATTACK
+	call TryExecuteEffectCommandFunction
+
+.use_attack
+	ld a, [wSelectedAttack]
+	ld e, a
+	ld a, DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	ld d, a
+	call CopyMoveDataAndDamage_FromDeckIndex
+	ld a, OPPACTION_USE_ATTACK
+	bank1call AIMakeDecision
+	ret c
+
+	ld a, OPPACTION_ATTACK_ANIM_AND_DAMAGE
+	call TryExecuteEffectCommandFunction
+	ld a, OPPACTION_ATTACK_ANIM_AND_DAMAGE
+	bank1call AIMakeDecision
+	ret
 
 ; return carry if any of the following is satisfied:
 ;	- deck index in a corresponds to a double colorless energy card;
@@ -285,7 +272,7 @@ CheckIfEnergyIsUseful: ; 14184 (5:4184)
 	pop de
 	or a
 	ret
-	
+
 .check_energy
 	ld a, d
 	cp e
@@ -294,33 +281,103 @@ CheckIfEnergyIsUseful: ; 14184 (5:4184)
 	pop de
 	scf
 	ret
-; 0x141da
 
-Func_141da: ; 141da (5:41da)
-	INCROM $141da, $14226
+; pick a random Pokemon in the bench.
+; output:
+;	- a = PLAY_AREA_* of Bench Pokemon picked.
+PickRandomBenchPokemon: ; 141da (5:41da)
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetTurnDuelistVariable
+	dec a
+	call Random
+	inc a
+	ret
 
-Func_14226: ; 14226 (5:4226)
+AIPickPrizeCards: ; 141e5 (5:41e5)
+	ld a, [wNumberPrizeCardsToTake]
+	ld b, a
+.loop
+	call .PickPrizeCard
+	ld a, DUELVARS_PRIZES
+	call GetTurnDuelistVariable
+	or a
+	jr z, .done
+	dec b
+	jr nz, .loop
+.done
+	ret
+
+; picks a prize card at random
+; and adds it to the hand.
+.PickPrizeCard: ; 141f8 (5:41f8)
+	ld a, DUELVARS_PRIZES
+	call GetTurnDuelistVariable
+	push hl
+	ld c, a
+
+; choose a random prize card until
+; one is found that isn't taken already.
+.loop_pick_prize
+	ld a, 6
+	call Random
+	ld e, a
+	ld d, $00
+	ld hl, .prize_flags
+	add hl, de
+	ld a, [hl]
+	and c
+	jr z, .loop_pick_prize ; no prize
+
+; prize card was found
+; remove this prize from wOpponentPrizes
+	ld a, [hl]
+	pop hl
+	cpl
+	and [hl]
+	ld [hl], a
+
+; add this prize card to the hand
+	ld a, e
+	add DUELVARS_PRIZE_CARDS
+	call GetTurnDuelistVariable
+	call AddCardToHand
+	ret
+
+.prize_flags ; 1421e (5:421e)
+	db $1 << 0
+	db $1 << 1
+	db $1 << 2
+	db $1 << 3
+	db $1 << 4
+	db $1 << 5
+	db $1 << 6
+	db $1 << 7
+
+; routine for AI to play all Basic cards from its hand
+; in the beginning of the Duel.
+AIPlayInitialBasicCards: ; 14226 (5:4226)
 	call CreateHandCardList
 	ld hl, wDuelTempList
 .check_for_next_card
 	ld a, [hli]
 	ldh [hTempCardIndex_ff98], a
 	cp $ff
-	ret z
+	ret z ; return when done
 
 	call LoadCardDataToBuffer1_FromDeckIndex
 	ld a, [wLoadedCard1Type]
 	cp TYPE_ENERGY
-	jr nc, .check_for_next_card
+	jr nc, .check_for_next_card ; skip if not Pokemon card
 	ld a, [wLoadedCard1Stage]
 	or a
-	jr nz, .check_for_next_card
+	jr nz, .check_for_next_card ; skip if not Basic Stage
+
+; play Basic card from hand
 	push hl
 	ldh a, [hTempCardIndex_ff98]
 	call PutHandPokemonCardInPlayArea
 	pop hl
 	jr .check_for_next_card
-; 0x1424b
 
 ; returns carry if Pokémon at hTempPlayAreaLocation_ff9d
 ; can't use a move or if that selected move doesn't have enough energy
@@ -348,14 +405,13 @@ CheckIfSelectedMoveIsUnusable: ; 1424b (5:424b)
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
 	call TryExecuteEffectCommandFunction
 	ret c
-	
+
 .bench
 	call CheckEnergyNeededForAttack
 	ret c ; can't be used
 	ld a, MOVE_FLAG2_ADDRESS | FLAG_2_BIT_5_F
 	call CheckLoadedMoveFlag
 	ret
-; 0x14279
 
 ; load selected move from Pokémon in hTempPlayAreaLocation_ff9d
 ; and checks if there is enough energy to execute the selected move
@@ -366,7 +422,7 @@ CheckIfSelectedMoveIsUnusable: ; 1424b (5:424b)
 ;	b = basic energy still needed
 ;	c = colorless energy still needed
 ;	e = output of ConvertColorToEnergyCardID, or $0 if not a move
-;	carry set if no move 
+;	carry set if no move
 ;	       OR if it's a Pokémon Power
 ;	       OR if not enough energy for move
 CheckEnergyNeededForAttack: ; 14279 (5:4279)
@@ -389,7 +445,7 @@ CheckEnergyNeededForAttack: ; 14279 (5:4279)
 	ld e, c
 	scf
 	ret
-	
+
 .is_attack
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld e, a
@@ -405,7 +461,7 @@ CheckEnergyNeededForAttack: ; 14279 (5:4279)
 	ld de, wLoadedMoveEnergyCost
 	ld b, 0
 	ld c, (NUM_TYPES / 2) - 1
-	
+
 .loop
 	; check all basic energy cards except colorless
 	ld a, [de]
@@ -424,7 +480,7 @@ CheckEnergyNeededForAttack: ; 14279 (5:4279)
 ; will always just return the result for one type of basic energy,
 ; while all others will necessarily have an energy cost of 0
 ; if moves are added to the game with energy requirements of
-; two different basic energy types, then this routine only accounts 
+; two different basic energy types, then this routine only accounts
 ; for the type with the highest index
 
 	; colorless
@@ -460,16 +516,15 @@ CheckEnergyNeededForAttack: ; 14279 (5:4279)
 	ld d, 0
 	scf
 	ret
-; 0x142f4
 
-; takes as input the energy cost of a move for a 
+; takes as input the energy cost of a move for a
 ; particular energy, stored in the lower nibble of a
 ; if the move costs some amount of this energy, the lower nibble of a != 0,
 ; and this amount is stored in wTempLoadedMoveEnergyCost
 ; sets carry flag if not enough energy of this type attached
 ; input:
-; 	a    = this energy cost of move (lower nibble)
-; 	[hl] = attached energy
+;	a    = this energy cost of move (lower nibble)
+;	[hl] = attached energy
 ; output:
 ;	carry set if not enough of this energy type attached
 CheckIfEnoughParticularAttachedEnergy: ; 142f4 (5:42f4)
@@ -495,7 +550,6 @@ CheckIfEnoughParticularAttachedEnergy: ; 142f4 (5:42f4)
 	inc b
 	scf
 	ret
-; 0x1430f
 
 ; input:
 ;	a = energy type
@@ -521,7 +575,7 @@ ConvertColorToEnergyCardID: ; 1430f (5:430f)
 	db FIGHTING_ENERGY
 	db PSYCHIC_ENERGY
 	db DOUBLE_COLORLESS_ENERGY
-	
+
 Func_14323: ; 14323 (5:4323)
 	INCROM $14323, $1433d
 
@@ -587,7 +641,6 @@ CheckIfCardCanBePlayed: ; 1433d (5:433d)
 	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_1
 	call TryExecuteEffectCommandFunction
 	ret
-; 0x1438c
 
 ; loads all the energy cards
 ; in hand in wDuelTempList
@@ -630,7 +683,6 @@ CreateEnergyCardListFromHand: ; 1438c (5:438c)
 	cp $ff
 	ccf
 	ret
-; 0x143bf
 
 ; looks for card ID in hand and
 ; sets carry if a card wasn't found
@@ -678,7 +730,6 @@ LookForCardIDInHand: ; 143bf (5:43bf)
 	pop hl
 	or a
 	ret
-; 0x143e5
 
 ; stores in wDamage, wAIMinDamage and wAIMaxDamage the calculated damage
 ; done to the defending Pokémon by a given card and move
@@ -725,7 +776,7 @@ EstimateDamage_VersusDefendingCard: ; 143e5 (5:43e5)
 	ld a, [wDamage]
 	ld [wAIMinDamage], a
 	ld [wAIMaxDamage], a
-	
+
 .calculation
 ; if temp. location is active, damage calculation can be done directly...
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -892,7 +943,6 @@ _CalculateDamage_VersusDefendingPokemon: ; 14462 (5:4462)
 	ld a, $ff
 	ld [hl], a
 	ret
-; 0x1450b
 
 ; stores in wDamage, wAIMinDamage and wAIMaxDamage the calculated damage
 ; done to the Pokémon at hTempPlayAreaLocation_ff9d
@@ -996,20 +1046,20 @@ EstimateDamage_FromDefendingPokemon: ; 1450b (5:450b)
 ; and poison damage for two turns
 ; and outputs the result capped at a max of $ff
 ; input:
-; 	[wAIMinDamage] = base damage
-; 	[wAIMaxDamage] = base damage
-; 	[wDamage]      = base damage
+;	[wAIMinDamage] = base damage
+;	[wAIMaxDamage] = base damage
+;	[wDamage]      = base damage
 ;	[hTempPlayAreaLocation_ff9d] = location of card to calculate
 ;								 damage as the receiver
 CalculateDamage_FromDefendingPokemon: ; 1458c (5:458c)
 	ld hl, wAIMinDamage
-	call _CalculateDamage_FromDefendingPokemon
+	call .CalculateDamage
 	ld hl, wAIMaxDamage
-	call _CalculateDamage_FromDefendingPokemon
+	call .CalculateDamage
 	ld hl, wDamage
-;	fallthrough
+	; fallthrough
 
-_CalculateDamage_FromDefendingPokemon: ; 1459b (5:459b)
+.CalculateDamage ; 1459b (5:459b)
 	ld e, [hl]
 	ld d, $00
 	push hl
@@ -1133,249 +1183,12 @@ _CalculateDamage_FromDefendingPokemon: ; 1459b (5:459b)
 	ld a, $ff
 	ld [hl], a
 	ret
-; 0x14663
 
 AIProcessHandTrainerCards: ; 14663 (5:4663)
 	farcall _AIProcessHandTrainerCards
 	ret
 
-; GENERAL DECK POINTER LIST - Not sure on all of these.
-; This is an example of an AI pointer table, there's one for each AI type.
-PointerTable_14668: ; 14668 (05:4668)
-	dw Func_14674 ; not used
-	dw Func_14674 ; general AI for battles
-	dw Func_14678 ; basic pokemon placement / cheater shuffling on better AI
-	dw Func_1467f
-	dw Func_14683
-	dw Func_14687
-
-; when battle AI gets called
-Func_14674: ; 14674 (5:4674)
-	call Func_1468b
-	ret
-
-Func_14678: ; 14678 (5:4678)
-	call Func_15636
-	call $4226
-	ret
-
-Func_1467f: ; 1467f (5:467f)
-	call $5b72
-	ret
-
-Func_14683: ; 14683 (5:4683)
-	call $5b72
-	ret
-
-Func_14687: ; 14687 (5:4687)
-	call $41e5
-	ret
-
-; AI for general decks i think
-Func_1468b: ; 1468b (5:468b)
-	call Func_15649
-	ld a, $1
-	call AIProcessHandTrainerCards
-	farcall $8, $67d3
-	jp nc, $4776
-	farcall $8, $6790
-	farcall $8, $66a3
-	farcall $8, $637f
-	ret c
-	farcall $8, $662d
-	ld a, $2
-	call AIProcessHandTrainerCards
-	ld a, $3
-	call AIProcessHandTrainerCards
-	ld a, $4
-	call AIProcessHandTrainerCards
-	call $5eae
-	ret c
-	ld a, $5
-	call AIProcessHandTrainerCards
-	ld a, $6
-	call AIProcessHandTrainerCards
-	ld a, $7
-	call AIProcessHandTrainerCards
-	ld a, $8
-	call AIProcessHandTrainerCards
-	call $4786
-	ld a, $a
-	call AIProcessHandTrainerCards
-	ld a, $b
-	call AIProcessHandTrainerCards
-	ld a, $c
-	call AIProcessHandTrainerCards
-	ld a, [wAlreadyPlayedEnergy]
-	or a
-	jr nz, .asm_146ed
-	call $64e8
-
-.asm_146ed
-	call $5eae
-	farcall $8, $66a3
-	farcall $8, $637f
-	ret c
-	farcall $8, $6790
-	ld a, $d
-	farcall $8, $619b
-	ld a, $d
-	call AIProcessHandTrainerCards
-	ld a, $f
-	call AIProcessHandTrainerCards
-	ld a, [wPreviousAIFlags]
-	and AI_FLAG_USED_PROFESSOR_OAK
-	jr z, .asm_14776
-	ld a, $1
-	call AIProcessHandTrainerCards
-	ld a, $2
-	call AIProcessHandTrainerCards
-	ld a, $3
-	call AIProcessHandTrainerCards
-	ld a, $4
-	call AIProcessHandTrainerCards
-	call $5eae
-	ret c
-	ld a, $5
-	call AIProcessHandTrainerCards
-	ld a, $6
-	call AIProcessHandTrainerCards
-	ld a, $7
-	call AIProcessHandTrainerCards
-	ld a, $8
-	call AIProcessHandTrainerCards
-	call $4786
-	ld a, $a
-	call AIProcessHandTrainerCards
-	ld a, $b
-	call AIProcessHandTrainerCards
-	ld a, $c
-	call AIProcessHandTrainerCards
-	ld a, [wAlreadyPlayedEnergy]
-	or a
-	jr nz, .asm_1475b
-	call $64e8
-
-.asm_1475b
-	call $5eae
-	farcall $8, $66a3
-	farcall $8, $637f
-	ret c
-	farcall $8, $6790
-	ld a, $d
-	farcall $8, $619b
-	ld a, $d
-	call AIProcessHandTrainerCards
-
-.asm_14776
-	ld a, $e
-	farcall $8, $619b
-	call $69f8
-	ret c
-	ld a, $5
-	bank1call AIMakeDecision
-	ret
-; 0x14786
-
-Func_14786: ; 14786 (5:4786)
-	INCROM $14786, $14c91
-
-; this routine handles how Legendary Articuno
-; prioritises playing energy cards to each Pokémon.
-; first, it makes sure that all Lapras have at least
-; 3 energy cards before moving on to Articuno,
-; and then to Dewgong and Seel
-ScoreLegendaryArticunoCards: ; 14c91 (5:4c91)
-	call SwapTurn
-	call CountPrizes
-	call SwapTurn
-	cp 3
-	ret c
-
-; player prizes >= 3
-; if Lapras has more than half HP and
-; can use second move, check next for Articuno
-; otherwise, check if Articuno or Dewgong
-; have more than half HP and can use second move
-; and if so, the next Pokémon to check is Lapras
-	ld a, LAPRAS
-	call CheckForBenchIDAtHalfHPAndCanUseSecondMove
-	jr c, .articuno
-	ld a, ARTICUNO1
-	call CheckForBenchIDAtHalfHPAndCanUseSecondMove
-	jr c, .lapras
-	ld a, DEWGONG
-	call CheckForBenchIDAtHalfHPAndCanUseSecondMove
-	jr c, .lapras
-	jr .articuno
-
-; the following routines check for certain card IDs in bench
-; and call RaiseAIScoreToAllMatchingIDsInBench if these are found.
-; for Lapras, an additional check is made to its
-; attached energy count, which skips calling the routine
-; if this count is >= 3
-.lapras
-	ld a, LAPRAS
-	ld b, PLAY_AREA_BENCH_1
-	call LookForCardIDInPlayArea_Bank5
-	jr nc, .articuno
-	ld e, a
-	call CountNumberOfEnergyCardsAttached
-	cp 3
-	jr nc, .articuno
-	ld a, LAPRAS
-	call RaiseAIScoreToAllMatchingIDsInBench
-	ret
-
-.articuno
-	ld a, ARTICUNO1
-	ld b, PLAY_AREA_BENCH_1
-	call LookForCardIDInPlayArea_Bank5
-	jr nc, .dewgong
-	ld a, ARTICUNO1
-	call RaiseAIScoreToAllMatchingIDsInBench
-	ret
-
-.dewgong
-	ld a, DEWGONG
-	ld b, PLAY_AREA_BENCH_1
-	call LookForCardIDInPlayArea_Bank5
-	jr nc, .seel
-	ld a, DEWGONG
-	call RaiseAIScoreToAllMatchingIDsInBench
-	ret
-
-.seel
-	ld a, SEEL
-	ld b, PLAY_AREA_BENCH_1
-	call LookForCardIDInPlayArea_Bank5
-	ret nc
-	ld a, SEEL
-	call RaiseAIScoreToAllMatchingIDsInBench
-	ret
-; 0x14cf7
-
-Func_14cf7: ; 14cf7 (5:4cf7)
-	INCROM $14cf7, $1514f
-
-; these seem to be lists of card IDs
-; for the AI to look up in their hand
-Data_1514f: ; 1514f (5:514f)
-	db KANGASKHAN
-	db CHANSEY
-	db SNORLAX
-	db MR_MIME
-	db ABRA
-	db $00
-
-	db ABRA
-	db MR_MIME
-	db KANGASKHAN
-	db SNORLAX
-	db CHANSEY
-	db $00
-
-	INCROM $1515b, $155d2
+INCLUDE "engine/deck_ai/deck_ai.asm"
 
 ; return carry if card ID loaded in a is found in hand
 ; and outputs in a the deck index of that card
@@ -1384,7 +1197,7 @@ Data_1514f: ; 1514f (5:514f)
 ; input:
 ;	a = card ID
 ; output:
-; 	a = card deck index, if found
+;	a = card deck index, if found
 ;	carry set if found
 LookForCardIDInHandList_Bank5: ; 155d2 (5:55d2)
 	ld [wTempCardIDToLook], a
@@ -1405,7 +1218,6 @@ LookForCardIDInHandList_Bank5: ; 155d2 (5:55d2)
 	ldh a, [hTempCardIndex_ff98]
 	scf
 	ret
-; 0x155ef
 
 ; returns carry if card ID in a
 ; is found in Play Area, starting with
@@ -1442,51 +1254,104 @@ LookForCardIDInPlayArea_Bank5: ; 155ef (5:55ef)
 	ld a, b
 	scf
 	ret
-; 0x15612
 
-Func_15612: ; 15612 (5:5612)
-	INCROM $15612, $15636
+; check if energy card ID in e is in AI hand and,
+; if so, attaches it to card ID in d in Play Area.
+; input:
+;	e = Energy card ID
+;	d = Pokemon card ID
+AIAttachEnergyInHandToCardInPlayArea: ; 15612 (5:5612)
+	ld a, e
+	push de
+	call LookForCardIDInHandList_Bank5
+	pop de
+	ret nc ; not in hand
+	ld b, PLAY_AREA_ARENA
 
-Func_15636: ; 15636 (5:5636)
+.attach
+	ld e, a
+	ld a, d
+	call LookForCardIDInPlayArea_Bank5
+	ldh [hTempPlayAreaLocation_ffa1], a
+	ld a, e
+	ldh [hTemp_ffa0], a
+	ld a, OPPACTION_PLAY_ENERGY
+	bank1call AIMakeDecision
+	ret
+
+; same as AIAttachEnergyInHandToCardInPlayArea but
+; only look for card ID in the Bench.
+AIAttachEnergyInHandToCardInBench: ; 1562b (5:562b)
+	ld a, e
+	push de
+	call LookForCardIDInHandList_Bank5
+	pop de
+	ret nc
+	ld b, PLAY_AREA_BENCH_1
+	jr AIAttachEnergyInHandToCardInPlayArea.attach
+
+InitAIDuelVars: ; 15636 (5:5636)
 	ld a, $10
 	ld hl, wcda5
 	call ClearMemory_Bank5
-	ld a, $5
-	ld [wcda6], a
+	ld a, 5
+	ld [wAIPokedexCounter], a
 	ld a, $ff
 	ld [wcda5], a
 	ret
 
-Func_15649: ; 15649 (5:5649)
-	ld a, [wcda6]
+; initializes some variables and sets value of wAIBarrierFlagCounter.
+; if Player uses Barrier 3 times in a row, AI checks if Player's deck
+; has only Mewtwo1 Pokemon cards (running a Mewtwo1 mill deck).
+InitAITurnVars: ; 15649 (5:5649)
+; increase Pokedex counter by 1
+	ld a, [wAIPokedexCounter]
 	inc a
-	ld [wcda6], a
+	ld [wAIPokedexCounter], a
+
 	xor a
 	ld [wPreviousAIFlags], a
 	ld [wcddb], a
 	ld [wcddc], a
-	ld [wce03], a
+	ld [wAIRetreatedThisTurn], a
+
+; checks if the Player used an attack last turn
+; and if it was the second attack of their card.
 	ld a, [wPlayerAttackingMoveIndex]
 	cp $ff
-	jr z, .asm_156b1
+	jr z, .check_flag
 	or a
-	jr z, .asm_156b1
+	jr z, .check_flag
 	ld a, [wPlayerAttackingCardIndex]
 	cp $ff
-	jr z, .asm_156b1
+	jr z, .check_flag
+
+; if the card is Mewtwo1, it means the Player
+; used its second attack, Barrier.
 	call SwapTurn
 	call GetCardIDFromDeckIndex
 	call SwapTurn
 	ld a, e
-	cp MEWTWO1 ; I believe this is a check for Mewtwo1's Barrier move
-	jr nz, .asm_156b1
-	ld a, [wcda7]
+	cp MEWTWO1
+	jr nz, .check_flag
+	; Player used Barrier last turn
+
+; check if flag was already set, if so,
+; reset wAIBarrierFlagCounter to $80.
+	ld a, [wAIBarrierFlagCounter]
 	bit 7, a
-	jr nz, .asm_156aa
+	jr nz, .set_flag
+
+; if not, increase it by 1 and check if it exceeds 2.
 	inc a
-	ld [wcda7], a
-	cp $3
-	jr c, .asm_156c2
+	ld [wAIBarrierFlagCounter], a
+	cp 3
+	jr c, .done
+
+; this means that the Player used Barrier
+; at least 3 turns in a row.
+; check if Player is running Mewtwo1-only deck,
+; if so, set wAIBarrierFlagCounter flag.
 	ld a, DUELVARS_ARENA_CARD
 	call GetNonTurnDuelistVariable
 	call SwapTurn
@@ -1494,35 +1359,35 @@ Func_15649: ; 15649 (5:5649)
 	call SwapTurn
 	ld a, e
 	cp MEWTWO1
-	jr nz, .asm_156a4
-	farcall $8, $67a9
-	jr nc, .asm_156aa
-
-.asm_156a4
+	jr nz, .reset_1
+	farcall CheckIfPlayerHasPokemonOtherThanMewtwo1
+	jr nc, .set_flag
+.reset_1
+; reset wAIBarrierFlagCounter
 	xor a
-	ld [wcda7], a
-	jr .asm_156c2
+	ld [wAIBarrierFlagCounter], a
+	jr .done
 
-.asm_156aa
-	ld a, $80
-	ld [wcda7], a
-	jr .asm_156c2
+.set_flag
+	ld a, AI_FLAG_MEWTWO_MILL + 0
+	ld [wAIBarrierFlagCounter], a
+	jr .done
 
-.asm_156b1
-	ld a, [wcda7]
+.check_flag
+; increase counter by 1 if flag is set
+	ld a, [wAIBarrierFlagCounter]
 	bit 7, a
-	jr z, .asm_156be
+	jr z, .reset_2
 	inc a
-	ld [wcda7], a
-	jr .asm_156c2
+	ld [wAIBarrierFlagCounter], a
+	jr .done
 
-.asm_156be
+.reset_2
+; reset wAIBarrierFlagCounter
 	xor a
-	ld [wcda7], a
-
-.asm_156c2
+	ld [wAIBarrierFlagCounter], a
+.done
 	ret
-; 0x156c3
 
 ; load selected move from Pokémon in hTempPlayAreaLocation_ff9d,
 ; gets an energy card to discard and subsequently
@@ -1535,7 +1400,7 @@ Func_15649: ; 15649 (5:5649)
 ;	b = basic energy still needed
 ;	c = colorless energy still needed
 ;	e = output of ConvertColorToEnergyCardID, or $0 if not a move
-;	carry set if no move 
+;	carry set if no move
 ;	       OR if it's a Pokémon Power
 ;	       OR if not enough energy for move
 CheckEnergyNeededForAttackAfterDiscard: ; 156c3 (5:56c3)
@@ -1639,7 +1504,6 @@ CheckEnergyNeededForAttackAfterDiscard: ; 156c3 (5:56c3)
 	ld d, 0
 	scf
 	ret
-; 0x1575e
 
 ; zeroes a bytes starting at hl
 ClearMemory_Bank5: ; 1575e (5:575e)
@@ -1656,7 +1520,6 @@ ClearMemory_Bank5: ; 1575e (5:575e)
 	pop bc
 	pop af
 	ret
-; 0x1576b
 
 ; returns in a the tens digit of value in a
 CalculateByteTensDigit: ; 1576b (5:576b)
@@ -1671,13 +1534,12 @@ CalculateByteTensDigit: ; 1576b (5:576b)
 	ld a, c
 	pop bc
 	ret
-; 0x15778
 
 ; returns in a the result of
 ; dividing b by a, rounded down
 ; input:
-; 	a = divisor
-; 	b = dividend
+;	a = divisor
+;	b = dividend
 CalculateBDividedByA_Bank5: ; 15778 (5:5778)
 	push bc
 	ld c, a
@@ -1693,7 +1555,6 @@ CalculateBDividedByA_Bank5: ; 15778 (5:5778)
 	ld a, c
 	pop bc
 	ret
-; 0x15787
 
 ; returns in a the number of energy cards attached
 ; to Pokémon in location held by e
@@ -1708,7 +1569,7 @@ CountNumberOfEnergyCardsAttached: ; 15787 (5:5787)
 	ld a, [wTotalAttachedEnergies]
 	or a
 	ret z
-	
+
 	xor a
 	push hl
 	push bc
@@ -1728,13 +1589,14 @@ CountNumberOfEnergyCardsAttached: ; 15787 (5:5787)
 	pop bc
 	pop hl
 	ret
-; 0x157a3
 
 ; returns carry if any card with ID in e is found
 ; in card location in a
 ; input:
 ;	a = card location to look in;
 ;	e = card ID to look for.
+; output:
+;	a = deck index of card found, if any
 CheckIfAnyCardIDinLocation: ; 157a3 (5:57a3)
 	ld b, a
 	ld c, e
@@ -1763,7 +1625,6 @@ CheckIfAnyCardIDinLocation: ; 157a3 (5:57a3)
 	ld a, e
 	scf
 	ret
-; 0x157c6
 
 ; counts total number of energy cards in opponent's hand
 ; plus all the cards attached in Turn Duelist's Play Area.
@@ -1802,7 +1663,6 @@ CountOppEnergyCardsInHandAndAttached: ; 157c6 (5:57c6)
 	dec d
 	jr nz, .loop_play_area
 	ret
-; 0x157f3
 
 ; returns carry if any card with ID in e is found
 ; in the list that is pointed by hl.
@@ -1854,10 +1714,81 @@ RemoveCardIDInList: ; 157f3 (5:57f3)
 	pop hl
 	or a
 	ret
-; 0x1581b
 
-Func_1581b: ; 1581b (5:581b)
-	INCROM $1581b, $158b2
+; play Pokemon cards from the hand to set the starting
+; Play Area of Boss decks.
+; each Boss deck has two ID lists in order of preference.
+; one list is for the Arena card is the other is for the Bench cards.
+; if Arena card could not be set (due to hand not having any card in its list)
+; or if list is null, return carry and do not play any cards.
+TrySetUpBossStartingPlayArea: ; 1581b (5:581b)
+	ld de, wAICardListArenaPriority
+	ld a, d
+	or a
+	jr z, .set_carry ; return if null
+
+; pick Arena card
+	call CreateHandCardList
+	ld hl, wDuelTempList
+	ld de, wAICardListArenaPriority
+	call .PlayPokemonCardInOrder
+	ret c
+
+; play Pokemon cards to Bench until there are
+; a maximum of 3 cards in Play Area.
+.loop
+	ld de, wAICardListBenchPriority
+	call .PlayPokemonCardInOrder
+	jr c, .done
+	cp 3
+	jr c, .loop
+
+.done
+	or a
+	ret
+.set_carry
+	scf
+	ret
+
+; runs through input card ID list in de.
+; plays to Play Area first card that is found in hand.
+; returns carry if none of the cards in the list are found.
+; returns number of Pokemon in Play Area in a.
+.PlayPokemonCardInOrder ; 1583f (5:583f)
+	ld a, [de]
+	ld c, a
+	inc de
+	ld a, [de]
+	ld d, a
+	ld e, c
+
+; go in order of the list in de and
+; add first card that matches ID.
+; returns carry if hand doesn't have any card in list.
+.loop_id_list
+	ld a, [de]
+	inc de
+	or a
+	jr z, .not_found
+	push de
+	ld e, a
+	call RemoveCardIDInList
+	pop de
+	jr nc, .loop_id_list
+
+	; play this card to Play Area and return
+	push hl
+	call PutHandPokemonCardInPlayArea
+	pop hl
+	or a
+	ret
+
+.not_found
+	scf
+	ret
+
+Func_1585b: ; 1585b (5:585b)
+	INCROM $1585b, $158b2
 
 ; determine AI score for retreating
 ; return carry if AI decides to retreat
@@ -1913,7 +1844,7 @@ AIDecideWhetherToRetreat: ; 158b2 (5:58b2)
 	jr nc, .active_cant_ko_1
 	ld a, 35
 	call SubFromAIScore
-	
+
 .active_cant_ko_1
 	call CheckIfDefendingPokemonCanKnockOut
 	jr nc, .defending_cant_ko
@@ -2207,7 +2138,7 @@ AIDecideWhetherToRetreat: ; 158b2 (5:58b2)
 .one_or_none
 	call CheckIfArenaCardIsAtHalfHPCanEvolveAndUseSecondMove
 	jr c, .check_defending_can_ko
-	call CheckIfBenchCardsAreAtHalfHPCanEvolveAndUseSecondMove
+	call CountNumberOfSetUpBenchPokemon
 	cp 2
 	jr c, .check_defending_can_ko
 	call AddToAIScore
@@ -2293,7 +2224,6 @@ AIDecideWhetherToRetreat: ; 158b2 (5:58b2)
 	pop de
 	jr nc, .loop_ko_3
 	jr .set_carry
-; 0x15b54
 
 ; if player's turn and loaded move is not a Pokémon Power OR
 ; if opponent's turn and wcddb == 0
@@ -2320,11 +2250,11 @@ Func_15b54: ; 15b54 (5:5b54)
 	ld a, %10000000
 	ld [wcdda], a
 	ret
-; 0x15b72
 
 ; calculates AI score for bench Pokémon
-; returns in hTempPlayAreaLocation_ff9d the
-; Play Area location of best card to switch to
+; returns in a and [hTempPlayAreaLocation_ff9d] the
+; Play Area location of best card to switch to.
+; returns carry if no Bench Pokemon.
 AIDecideBenchPokemonToSwitchTo: ; 15b72 (5:5b72)
 	xor a
 	ldh [hTempPlayAreaLocation_ff9d], a
@@ -2376,17 +2306,17 @@ AIDecideBenchPokemonToSwitchTo: ; 15b72 (5:5b72)
 	xor a
 	ld [wSelectedAttack], a
 	call CheckIfSelectedMoveIsUnusable
-	call nc, .calculate_damage
+	call nc, .HandleAttackDamageScore
 	ld a, $01
 	ld [wSelectedAttack], a
 	call CheckIfSelectedMoveIsUnusable
-	call nc, .calculate_damage
+	call nc, .HandleAttackDamageScore
 	jr .check_energy_card
 
 ; adds to AI score depending on amount of damage
 ; it can inflict to the defending Pokémon
 ; AI score += floor(Damage / 10) + 1
-.calculate_damage
+.HandleAttackDamageScore
 	ld a, [wSelectedAttack]
 	call EstimateDamage_VersusDefendingCard
 	ld a, [wDamage]
@@ -2571,40 +2501,40 @@ AIDecideBenchPokemonToSwitchTo: ; 15b72 (5:5b72)
 	cp MYSTERIOUS_FOSSIL
 	jr z, .lower_score_2
 	cp CLEFAIRY_DOLL
-	jr nz, .asm_15d0c
+	jr nz, .ai_score_bonus
 .lower_score_2
 	ld a, 10
 	call SubFromAIScore
 
-.asm_15d0c
+.ai_score_bonus
 	ld b, a
-	ld a, [$cdb1]
+	ld a, [wAICardListRetreatBonus + 1]
 	or a
 	jr z, .store_score
 	ld h, a
-	ld a, [$cdb0]
+	ld a, [wAICardListRetreatBonus]
 	ld l, a
 
-.loop
+.loop_ids
 	ld a, [hli]
 	or a
-	jr z, .store_score
+	jr z, .store_score ; list is over
 	cp b
-	jr nz, .asm_15d32
+	jr nz, .next_id
 	ld a, [hl]
 	cp $80
-	jr c, .asm_15d2b
+	jr c, .subtract_score
 	sub $80
 	call AddToAIScore
-	jr .asm_15d32
-.asm_15d2b
+	jr .next_id
+.subtract_score
 	ld c, a
 	ld a, $80
 	sub c
 	call SubFromAIScore
-.asm_15d32
+.next_id
 	inc hl
-	jr .loop
+	jr .loop_ids
 
 .store_score
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -2623,12 +2553,15 @@ AIDecideBenchPokemonToSwitchTo: ; 15b72 (5:5b72)
 	xor a
 	ld [wcdb4], a
 	jp FindHighestBenchScore
-; 0x15d4f
 
 ; handles AI action of retreating Arena Pokémon
-; and chooses which energy cards to discard
-; if card can't discard, return carry
-AIChooseEnergyToDiscardForRetreatCost: ; 15d4f (5:5d4f)
+; and chooses which energy cards to discard.
+; if card can't discard, return carry.
+; in case it's Clefairy Doll or Mysterious Fossil,
+; handle its effect to discard itself instead of retreating.
+; input:
+;	- a = Play Area location (PLAY_AREA_*) of card to retreat to.
+AITryToRetreat: ; 15d4f (5:5d4f)
 	push af
 	ld a, [wAIPlayEnergyCardForRetreat]
 	or a
@@ -2779,7 +2712,7 @@ AIChooseEnergyToDiscardForRetreatCost: ; 15d4f (5:5d4f)
 
 ; second, shuffle attached cards and discard energy cards
 ; that are not of the same type as the Pokémon
-; the exception for this are cards that are needed for 
+; the exception for this are cards that are needed for
 ; some attacks but are not of the same color as the Pokémon
 ; (i.e. Psyduck's Headache attack)
 ; and energy cards attached to Eevee corresponding to a
@@ -2859,14 +2792,13 @@ AIChooseEnergyToDiscardForRetreatCost: ; 15d4f (5:5d4f)
 	ld a, OPPACTION_USE_PKMN_POWER
 	bank1call AIMakeDecision
 	pop af
-	ldh [hTempPlayAreaLocation_ffa1], a
+	ldh [hAIPkmnPowerEffectParam], a
 	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
 	bank1call AIMakeDecision
 	ld a, OPPACTION_DUEL_MAIN_SCENE
 	bank1call AIMakeDecision
 	or a
 	ret
-; 0x15ea6
 
 ; Copy cards from wDuelTempList in hl to wHandTempList in de
 CopyHandCardList: ; 15ea6 (5:5ea6)
@@ -3198,7 +3130,7 @@ AIDecideEvolution: ; 15f4c (5:5f4c)
 	call CalculateByteTensDigit
 	call SubFromAIScore
 
-; if is Mysterious Fossil or 
+; if is Mysterious Fossil or
 ; wLoadedCard1Unknown2 is set to $02,
 ; raise AI score
 .check_mysterious_fossil
@@ -3387,7 +3319,7 @@ Func_16120: ; 16120 (5:6120)
 	ret
 
 ; if Dragonair is active, check its damage in HP
-; if this result is >= 50, 
+; if this result is >= 50,
 ; and if at least 3 energy cards attached,
 ; check if there's a Muk in any duelist's Play Area
 .is_active
@@ -3401,7 +3333,6 @@ Func_16120: ; 16120 (5:6120)
 	cp 3
 	jr c, .lower_score
 	jr .check_muk
-; 0x161d5
 
 ; determine AI score for the legendary cards
 ; Moltres, Zapdos and Articuno
@@ -3440,7 +3371,7 @@ Func_161d5: ; 161d5 (5:61d5)
 	jr nc, .subtract
 	call AIDecideWhetherToRetreat
 	jr c, .subtract
-	
+
 	; checks for player's active card status
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	call GetNonTurnDuelistVariable
@@ -3505,7 +3436,6 @@ Func_161d5: ; 161d5 (5:61d5)
 	call CountPokemonIDInBothPlayAreas
 	jr c, .subtract
 	ret
-; 0x16270
 
 ; check if player's active Pokémon is Mr Mime
 ; if it isn't, set carry
@@ -3532,7 +3462,6 @@ CheckDamageToMrMime: ; 16270 (5:6270)
 .set_carry
 	scf
 	ret
-; 0x1628f
 
 ; returns carry if arena card
 ; can knock out defending Pokémon
@@ -3545,11 +3474,10 @@ CheckIfActiveCardCanKnockOut: ; 1628f (5:628f)
 	jp c, .fail
 	scf
 	ret
-	
+
 .fail
 	or a
 	ret
-; 0x162a1
 
 ; outputs carry if any of the active Pokémon attacks
 ; can be used and are not residual
@@ -3580,11 +3508,10 @@ CheckIfActivePokemonCanUseAnyNonResidualMove: ; 162a1 (5:62a1)
 .ok
 	scf
 	ret
-; 0x162c8
 
 ; looks for energy card(s) in hand depending on
 ; what is needed for selected card, for both moves
-; 	- if one basic energy is required, look for that energy;
+;	- if one basic energy is required, look for that energy;
 ;	- if one colorless is required, create a list at wDuelTempList
 ;	  of all energy cards;
 ;	- if two colorless are required, look for double colorless;
@@ -3642,11 +3569,10 @@ LookForEnergyNeededInHand: ; 162c8 (5:62c8)
 	call LookForCardIDInHandList_Bank5
 	ret c
 	jr .no_carry
-; 0x16311
 
 ; looks for energy card(s) in hand depending on
 ; what is needed for selected card and move
-; 	- if one basic energy is required, look for that energy;
+;	- if one basic energy is required, look for that energy;
 ;	- if one colorless is required, create a list at wDuelTempList
 ;	  of all energy cards;
 ;	- if two colorless are required, look for double colorless;
@@ -3689,28 +3615,27 @@ LookForEnergyNeededForMoveInHand: ; 16311 (5:6311)
 	call LookForCardIDInHandList_Bank5
 	ret c
 	jr .done
-; 0x1633f
 
-; goes through $00 terminated list pointed 
-; by wcdae and compares it to each card in hand.
+; goes through $00 terminated list pointed
+; by wAICardListPlayFromHandPriority and compares it to each card in hand.
 ; Sorts the hand in wDuelTempList so that the found card IDs
 ; are in the same order as the list pointed by de.
 SortTempHandByIDList: ; 1633f (5:633f)
-	ld a, [wcdae+1]
+	ld a, [wAICardListPlayFromHandPriority+1]
 	or a
-	ret z
+	ret z ; return if list is empty
 
 ; start going down the ID list
 	ld d, a
-	ld a, [wcdae]
+	ld a, [wAICardListPlayFromHandPriority]
 	ld e, a
 	ld c, 0
-.next_list_id
+.loop_list_id
 ; get this item's ID
 ; if $00, list has ended
 	ld a, [de]
 	or a
-	ret z
+	ret z ; return when list is over
 	inc de
 	ld hl, wDuelTempList
 	ld b, 0
@@ -3722,7 +3647,7 @@ SortTempHandByIDList: ; 1633f (5:633f)
 	ld a, [hl]
 	ldh [hTempCardIndex_ff98], a
 	cp -1
-	jr z, .next_list_id
+	jr z, .loop_list_id
 	push bc
 	push de
 	call GetCardIDFromDeckIndex
@@ -3750,13 +3675,12 @@ SortTempHandByIDList: ; 1633f (5:633f)
 .not_same
 	inc hl
 	jr .next_hand_card
-; 0x1637b
 
 ; looks for energy card(s) in list at wDuelTempList
 ; depending on energy flags set in a
 ; return carry if successful in finding card
 ; input:
-; 	a = energy flags needed
+;	a = energy flags needed
 CheckEnergyFlagsNeededInList: ; 1637b (5:637b)
 	ld e, a
 	ld hl, wDuelTempList
@@ -3815,7 +3739,6 @@ CheckEnergyFlagsNeededInList: ; 1637b (5:637b)
 .no_carry
 	or a
 	ret
-; 0x163c9
 
 ; returns in a the energy cost of both moves from card index in a
 ; represented by energy flags
@@ -3837,7 +3760,6 @@ GetMovesEnergyCostBits: ; 163c9 (5:63c9)
 	pop bc
 	or b
 	ret
-; 0x163dd
 
 ; returns in a the energy cost of a move in [hl]
 ; represented by energy flags
@@ -3904,7 +3826,6 @@ GetEnergyCostBits: ; 163dd (5:63dd)
 .done
 	ld a, c
 	ret
-; 0x16422
 
 ; set carry flag if any card in
 ; wDuelTempList evolves card index in a
@@ -3949,7 +3870,6 @@ CheckForEvolutionInList: ; 16422 (5:6422)
 	ld [hl], a
 	or a
 	ret
-; 0x16451
 
 ; set carry if it finds an evolution for
 ; the card index in a in the deck
@@ -4001,52 +3921,62 @@ CheckForEvolutionInDeck: ; 16451 (5:6451)
 	ld a, e
 	scf
 	ret
-; 0x16488
 
-Func_16488 ; 16488 (5:6488)
+Func_16488: ; 16488 (5:6488)
 	INCROM $16488, $164a1
 
-; copies wPlayAreaAIScore to wTempPlayAreaAIScore.
-; copies AIScore to wcde3.
-; decides which card to get energy card.
-Func_164a1: ; 164a1 (5:64a1)
-	ld a, $03
-	ld [wcdd8], a
+; have AI choose an energy card to play, but do not play it.
+; does not consider whether the cards have evolutions to be played.
+; return carry if an energy card is chosen to use in any Play Area card,
+; and if so, return its Play Area location in hTempPlayAreaLocation_ff9d.
+AIProcessButDontPlayEnergy_SkipEvolution: ; 164a1 (5:64a1)
+	ld a, AI_ENERGY_FLAG_DONT_PLAY | AI_ENERGY_FLAG_SKIP_EVOLUTION
+	ld [wAIEnergyAttachLogicFlags], a
+
+; backup wPlayAreaAIScore in wTempPlayAreaAIScore.
 	ld de, wTempPlayAreaAIScore
 	ld hl, wPlayAreaAIScore
 	ld b, MAX_PLAY_AREA_POKEMON
-.loop_play_area
+.loop
 	ld a, [hli]
 	ld [de], a
 	inc de
 	dec b
-	jr nz, .loop_play_area
+	jr nz, .loop
 
 	ld a, [wAIScore]
 	ld [de], a
-	jr AIDecideWhichCardToAttachEnergy
 
-Func_164ba: ; 164ba (5:64ba)
-	ld a, $83
-	ld [wcdd8], a
+	jr AIProcessEnergyCards
+
+; have AI choose an energy card to play, but do not play it.
+; does not consider whether the cards have evolutions to be played.
+; return carry if an energy card is chosen to use in any Bench card,
+; and if so, return its Play Area location in hTempPlayAreaLocation_ff9d.
+AIProcessButDontPlayEnergy_SkipEvolutionAndArena: ; 164ba (5:64ba)
+	ld a, AI_ENERGY_FLAG_DONT_PLAY | AI_ENERGY_FLAG_SKIP_EVOLUTION | AI_ENERGY_FLAG_SKIP_ARENA_CARD
+	ld [wAIEnergyAttachLogicFlags], a
+
+; backup wPlayAreaAIScore in wTempPlayAreaAIScore.
 	ld de, wTempPlayAreaAIScore
 	ld hl, wPlayAreaAIScore
 	ld b, MAX_PLAY_AREA_POKEMON
-.asm_164c7
+.loop
 	ld a, [hli]
 	ld [de], a
 	inc de
 	dec b
-	jr nz, .asm_164c7
+	jr nz, .loop
 
 	ld a, [wAIScore]
 	ld [de], a
-	jr AIDecideWhichCardToAttachEnergy
+
+	jr AIProcessEnergyCards
 
 ; copies wTempPlayAreaAIScore to wPlayAreaAIScore
-; and loads wAIscore with value in wcde3.
-; identical to Func_169e3.
-Func_164d3: ; 164d3 (5:64d3)
+; and loads wAIscore with value in wTempAIScore.
+; identical to RetrievePlayAreaAIScoreFromBackup2.
+RetrievePlayAreaAIScoreFromBackup1: ; 164d3 (5:64d3)
 	push af
 	ld de, wPlayAreaAIScore
 	ld hl, wTempPlayAreaAIScore
@@ -4061,38 +3991,40 @@ Func_164d3: ; 164d3 (5:64d3)
 	ld [wAIScore], a
 	pop af
 	ret
-; 0x164e8
 
-; have AI decide whether to play energy card from hand 
+; have AI decide whether to play energy card from hand
 ; and determine which card is best to attach it.
-AIDecidePlayEnergyCardFromHand: ; 164e8 (5:64e8)
+AIProcessAndTryToPlayEnergy: ; 164e8 (5:64e8)
 	xor a
-	ld [wcdd8], a
+	ld [wAIEnergyAttachLogicFlags], a
 	call CreateEnergyCardListFromHand
-	jr nc, AIDecideWhichCardToAttachEnergy
+	jr nc, AIProcessEnergyCards
 
 ; no energy
-	ld a, [wcdd8]
+	ld a, [wAIEnergyAttachLogicFlags]
 	or a
 	jr z, .exit
-	jp Func_164d3
+	jp RetrievePlayAreaAIScoreFromBackup1
 .exit
 	or a
 	ret
 
 ; have AI decide whether to play energy card
 ; and determine which card is best to attach it.
-AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
+AIProcessEnergyCards: ; 164fc (5:64fc)
+; initialize Play Area AI score
 	ld a, $80
 	ld b, MAX_PLAY_AREA_POKEMON
-	ld hl, wcde4
+	ld hl, wPlayAreaEnergyAIScore
 .loop
 	ld [hli], a
 	dec b
 	jr nz, .loop
 
+; Legendary Articuno Deck has its own energy card logic
 	call HandleLegendaryArticunoEnergyScoring
 
+; start the main Play Area loop
 	ld b, PLAY_AREA_ARENA
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
@@ -4106,8 +4038,8 @@ AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
 	ld [wAIScore], a
 	ld a, $ff
 	ld [wTempAI], a
-	ld a, [wcdd8]
-	and $02
+	ld a, [wAIEnergyAttachLogicFlags]
+	and AI_ENERGY_FLAG_SKIP_EVOLUTION
 	jr nz, .check_venusaur
 
 ; check if energy needed is found in hand
@@ -4125,7 +4057,7 @@ AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
 	ld a, [wCurCardCanAttack]
 	call CheckForEvolutionInList
 	jr nc, .no_evolution_in_hand
-	ld [wTempAI], a
+	ld [wTempAI], a ; store evolution card found
 	ld a, 2
 	call AddToAIScore
 	jr .check_venusaur
@@ -4137,8 +4069,9 @@ AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
 	ld a, 1
 	call AddToAIScore
 
-; if there's no Muk in Play Area
-; and there's Venusaur2, add to AI score
+; if there's no Muk in any Play Area
+; and there's Venusaur2 in own Play Area,
+; add to AI score
 .check_venusaur
 	ld a, MUK
 	call CountPokemonIDInBothPlayAreas
@@ -4155,29 +4088,32 @@ AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
 	jr nz, .bench
 
 ; arena
-	ld a, [wcda7]
+	ld a, [wAIBarrierFlagCounter]
 	bit 7, a
-	jr z, .check_arena_hp
+	jr z, .add_to_score
+
+; subtract from score instead
+; if Player is running Mewtwo1 mill deck.
 	ld a, 5
 	call SubFromAIScore
 	jr .check_defending_can_ko
 
-; lower AI score if poison/double poison
-; will KO Pokémon between turns
-; or if the defending Pokémon can KO
-.check_arena_hp
+.add_to_score
 	ld a, 4
 	call AddToAIScore
 
+; lower AI score if poison/double poison
+; will KO Pokémon between turns
+; or if the defending Pokémon can KO
 	ld a, DUELVARS_ARENA_CARD_HP
 	call GetTurnDuelistVariable
 	call CalculateByteTensDigit
 	cp 3
 	jr nc, .check_defending_can_ko
-; hp < 30
+	; hp < 30
 	cp 2
 	jr z, .has_20_hp
-; hp = 10
+	; hp = 10
 	ld a, DUELVARS_ARENA_CARD_STATUS
 	call GetTurnDuelistVariable
 	and POISONED
@@ -4194,7 +4130,7 @@ AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
 	jr .check_bench
 .check_defending_can_ko
 	call CheckIfDefendingPokemonCanKnockOut
-	jr nc, .asm_165e1
+	jr nc, .ai_score_bonus
 	ld a, 10
 	call SubFromAIScore
 
@@ -4205,10 +4141,10 @@ AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
 	dec a
-	jr nz, .asm_165e1
+	jr nz, .ai_score_bonus
 	ld a, 6
 	call AddToAIScore
-	jr .asm_165e1
+	jr .ai_score_bonus
 
 ; lower AI score by 3 - (bench HP)/10
 ; if bench HP < 30
@@ -4217,20 +4153,20 @@ AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
 	call GetTurnDuelistVariable
 	call CalculateByteTensDigit
 	cp 3
-	jr nc, .asm_165e1
+	jr nc, .ai_score_bonus
 ; hp < 30
 	ld b, a
 	ld a, 3
 	sub b
 	call SubFromAIScore
 
-; check list in wcdb2
-.asm_165e1
-	ld a, [wcdb3]
+; check list in wAICardListEnergyBonus
+.ai_score_bonus
+	ld a, [wAICardListEnergyBonus + 1]
 	or a
-	jr z, .check_boss_deck
+	jr z, .check_boss_deck ; is null
 	ld h, a
-	ld a, [wcdb2]
+	ld a, [wAICardListEnergyBonus]
 	ld l, a
 
 	push hl
@@ -4258,6 +4194,7 @@ AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
 	pop de
 	cp d
 	jr c, .check_id_score
+	; already reached target number of energy cards
 	ld a, 10
 	call SubFromAIScore
 	jr .store_score
@@ -4288,11 +4225,12 @@ AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
 .check_boss_deck
 	call CheckIfNotABossDeckID
 	jr c, .skip_boss_deck
+
 	call Func_174f2
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld c, a
 	ld b, $00
-	ld hl, wcde4
+	ld hl, wPlayAreaEnergyAIScore
 	add hl, bc
 	ld a, [hl]
 	cp $80
@@ -4306,7 +4244,7 @@ AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
 	ld a, $80
 	sub b
 	call SubFromAIScore
-	
+
 .skip_boss_deck
 	ld a, 1
 	call AddToAIScore
@@ -4317,7 +4255,7 @@ AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
 	call DetermineAIScoreOfMoveEnergyRequirement
 	ld a, $01 ; second move
 	call DetermineAIScoreOfMoveEnergyRequirement
-	
+
 ; store bench score for this card.
 .store_score
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -4336,27 +4274,26 @@ AIDecideWhichCardToAttachEnergy: ; 164fc (5:64fc)
 ; for each card has been calculated.
 ; now to determine the highest score.
 	call FindPlayAreaCardWithHighestAIScore
-	jp nc, .asm_1668a
+	jp nc, .not_found
 
-	ld a, [wcdd8]
+	ld a, [wAIEnergyAttachLogicFlags]
 	or a
 	jr z, .play_card
 	scf
-	jp Func_164d3
+	jp RetrievePlayAreaAIScoreFromBackup1
 
 .play_card
 	call CreateEnergyCardListFromHand
 	jp AITryToPlayEnergyCard
 
-.asm_1668a: ; 1668a (5:668a)
-	ld a, [wcdd8]
+.not_found: ; 1668a (5:668a)
+	ld a, [wAIEnergyAttachLogicFlags]
 	or a
-	jr z, .asm_16693
-	jp Func_164d3
-.asm_16693
+	jr z, .no_carry
+	jp RetrievePlayAreaAIScoreFromBackup1
+.no_carry
 	or a
 	ret
-; 0x16695
 
 ; checks score related to selected move,
 ; in order to determine whether to play energy card.
@@ -4556,21 +4493,22 @@ DetermineAIScoreOfMoveEnergyRequirement: ; 16695 (5:6695)
 	pop af
 	ld [hl], a
 	ret
-; 0x167b5
 
 ; returns in hTempPlayAreaLocation_ff9d the Play Area location
 ; of the card with the highest Play Area AI score, unless
 ; the highest score is below $85.
 ; if it succeeds in return a card location, set carry.
+; if AI_ENERGY_FLAG_SKIP_ARENA_CARD is set in wAIEnergyAttachLogicFlags
+; doesn't include the Arena card and there's no minimum score.
 FindPlayAreaCardWithHighestAIScore: ; 167b5 (5:67b5)
-	ld a, [wcdd8]
-	and $80
-	jr nz, .asm_167e1
+	ld a, [wAIEnergyAttachLogicFlags]
+	and AI_ENERGY_FLAG_SKIP_ARENA_CARD
+	jr nz, .only_bench
 
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
 	ld b, a
-	ld c, 0 ; PLAY_AREA_ARENA
+	ld c, PLAY_AREA_ARENA
 	ld e, c
 	ld d, c
 	ld hl, wPlayAreaAIScore
@@ -4601,7 +4539,7 @@ FindPlayAreaCardWithHighestAIScore: ; 167b5 (5:67b5)
 	ret
 
 ; same as above but only check bench Pokémon scores.
-.asm_167e1
+.only_bench
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
 	call GetTurnDuelistVariable
 	dec a
@@ -4624,6 +4562,7 @@ FindPlayAreaCardWithHighestAIScore: ; 167b5 (5:67b5)
 	dec b
 	jr nz, .loop_2
 
+; in this case, there is no minimum threshold AI score.
 	ld a, d
 	ldh [hTempPlayAreaLocation_ff9d], a
 	scf
@@ -4631,7 +4570,6 @@ FindPlayAreaCardWithHighestAIScore: ; 167b5 (5:67b5)
 .no_carry
 	or a
 	ret
-; 0x16805
 
 ; returns carry if there's an evolution card
 ; that can evolve card in hTempPlayAreaLocation_ff9d,
@@ -4671,7 +4609,6 @@ CheckIfEvolutionNeedsEnergyForMove: ; 16805 (5:6805)
 	ld [hl], a
 	scf
 	ret
-; 0x1683b
 
 ; returns in e the card ID of the energy required for
 ; the Discard/Energy Boost attack loaded in wSelectedAttack.
@@ -4681,7 +4618,7 @@ CheckIfEvolutionNeedsEnergyForMove: ; 16805 (5:6805)
 ; output:
 ;	b = 1 if needs color energy, 0 otherwise;
 ;	c = 1 if only needs colorless energy, 0 otherwise;
-; 	carry set if not Zapdos2's Thunderbolt attack.
+;	carry set if not Zapdos2's Thunderbolt attack.
 GetEnergyCardForDiscardOrEnergyBoostAttack: ; 1683b (5:683b)
 ; load card ID and check selected move index.
 	ldh a, [hTempPlayAreaLocation_ff9d]
@@ -4694,16 +4631,16 @@ GetEnergyCardForDiscardOrEnergyBoostAttack: ; 1683b (5:683b)
 	jr z, .first_attack
 
 ; check if second attack is Zapdos2's Thunderbolt,
-; Charizard's Fire Spin or Exeggcutor's Big Eggsplosion,
+; Charizard's Fire Spin or Exeggutor's Big Eggsplosion,
 ; for these to be treated differently.
 ; for both attacks, load its energy cost.
 	ld a, b
 	cp ZAPDOS2
 	jr z, .zapdos2
 	cp CHARIZARD
-	jr z, .charizard_or_exeggcutor
+	jr z, .charizard_or_exeggutor
 	cp EXEGGUTOR
-	jr z, .charizard_or_exeggcutor
+	jr z, .charizard_or_exeggutor
 	ld hl, wLoadedCard2Move2EnergyCost
 	jr .fire
 .first_attack
@@ -4758,13 +4695,12 @@ GetEnergyCardForDiscardOrEnergyBoostAttack: ; 1683b (5:683b)
 	or a
 	ret
 
-; Charizard's Fire Spin and Exeggcutor's Big Eggsplosion,
+; Charizard's Fire Spin and Exeggutor's Big Eggsplosion,
 ; return carry.
-.charizard_or_exeggcutor
+.charizard_or_exeggutor
 	lb bc, $00, $01
 	scf
 	ret
-; 0x1689f
 
 ; called after the AI has decided which card to attach
 ; energy from hand. AI does checks to determine whether
@@ -4930,7 +4866,6 @@ AITryToPlayEnergyCard: ; 1689f (5:689f)
 	or a
 	jp z, .second_attack
 	ret
-; 0x1696e
 
 ; check if playing certain decks so that AI can decide whether to play
 ; double colorless to some specific cards.
@@ -4939,7 +4874,7 @@ AITryToPlayEnergyCard: ; 1689f (5:689f)
 ; return carry if there's a double colorless in hand to attach
 ; and it's one of the card IDs from these decks.
 ; output:
-; 	[hTemp_ffa0] = card index of double colorless in hand;
+;	[hTemp_ffa0] = card index of double colorless in hand;
 ;	carry set if can play energy card.
 CheckSpecificDecksToAttachDoubleColorless: ; 1696e (5:696e)
 	push bc
@@ -5017,13 +4952,14 @@ CheckSpecificDecksToAttachDoubleColorless: ; 1696e (5:696e)
 	call GetCardIDFromDeckIndex
 	ld a, e
 	ret
-; 0x169ca
 
-Func_169ca: ; 169ca (5:69ca)
+; have AI choose an attack to use, but do not execute it.
+; return carry if an attack is chosen.
+AIProcessButDontUseAttack: ; 169ca (5:69ca)
 	ld a, $01
-	ld [wcdd9], a
+	ld [wAIExecuteProcessedAttack], a
 
-; copy wPlayAreaAIScore to wTempPlayAreaAIScore.
+; backup wPlayAreaAIScore in wTempPlayAreaAIScore.
 	ld de, wTempPlayAreaAIScore
 	ld hl, wPlayAreaAIScore
 	ld b, MAX_PLAY_AREA_POKEMON
@@ -5034,15 +4970,15 @@ Func_169ca: ; 169ca (5:69ca)
 	dec b
 	jr nz, .loop
 
-; copies wAIScore to wcde3
+; copies wAIScore to wTempAIScore
 	ld a, [wAIScore]
 	ld [de], a
-	jr Func_169fc
+	jr AIProcessAttacks
 
 ; copies wTempPlayAreaAIScore to wPlayAreaAIScore
-; and loads wAIscore with value in wcde3.
-; identical to Func_164d3.
-Func_169e3: ; 169e3 (5:69e3)
+; and loads wAIscore with value in wTempAIScore.
+; identical to RetrievePlayAreaAIScoreFromBackup1.
+RetrievePlayAreaAIScoreFromBackup2: ; 169e3 (5:69e3)
 	push af
 	ld de, wPlayAreaAIScore
 	ld hl, wTempPlayAreaAIScore
@@ -5058,14 +4994,19 @@ Func_169e3: ; 169e3 (5:69e3)
 	ld [wAIScore], a
 	pop af
 	ret
-; 0x169f8
 
-Func_169f8: ; 169f8 (5:69f8)
+; have AI choose and execute an attack.
+; return carry if an attack was chosen and attempted.
+AIProcessAndTryToUseAttack: ; 169f8 (5:69f8)
 	xor a
-	ld [wcdd9], a
+	ld [wAIExecuteProcessedAttack], a
 	; fallthrough
 
-Func_169fc: ; 169fc (5:69fc)
+; checks which of the Active card's attacks for AI to use.
+; If any of the attacks has enough AI score to be used,
+; AI will use it if wAIExecuteProcessedAttack is 0.
+; in either case, return carry if an attack is chosen to be used.
+AIProcessAttacks: ; 169fc (5:69fc)
 ; if AI used Pluspower, load its attack index
 	ld a, [wPreviousAIFlags]
 	and AI_FLAG_USED_PLUSPOWER
@@ -5075,25 +5016,27 @@ Func_169fc: ; 169fc (5:69fc)
 	jr .attack_chosen
 
 .no_pluspower
-	ld a, [wcda7]
-	cp $80
-	jp z, .asm_16a77
+; if Player is running Mewtwo1 mill deck,
+; skip attack if Barrier counter is 0.
+	ld a, [wAIBarrierFlagCounter]
+	cp AI_FLAG_MEWTWO_MILL + 0
+	jp z, .dont_attack
 
 ; determine AI score of both attacks.
 	xor a ; FIRST_ATTACK_OR_PKMN_POWER
 	call GetAIScoreOfAttack
 	ld a, [wAIScore]
-	ld [wPlayAreaAIScore], a
+	ld [wFirstAttackAIScore], a
 	ld a, SECOND_ATTACK
 	call GetAIScoreOfAttack
 
 ; compare both attack scores
 	ld c, SECOND_ATTACK
-	ld a, [wPlayAreaAIScore]
+	ld a, [wFirstAttackAIScore]
 	ld b, a
 	ld a, [wAIScore]
 	cp b
-	jr nc, .asm_16a30
+	jr nc, .check_score
 	; first attack has higher score
 	dec c
 	ld a, b
@@ -5103,9 +5046,9 @@ Func_169fc: ; 169fc (5:69fc)
 ; first check if chosen attack has at least minimum score.
 ; then check if first attack is better than second attack
 ; in case the second one was chosen.
-.asm_16a30
+.check_score
 	cp $50 ; minimum score to use attack
-	jr c, .asm_16a77
+	jr c, .dont_attack
 	; enough score, proceed
 
 	ld a, c
@@ -5113,16 +5056,20 @@ Func_169fc: ; 169fc (5:69fc)
 	or a
 	jr z, .attack_chosen
 	call CheckWhetherToSwitchToFirstAttack
-	
-.attack_chosen
-	ld a, [wcdd9]
-	or a
-	jr z, .asm_16a48
-	scf
-	jp Func_169e3
 
-.asm_16a48
-	ld a, $0e
+.attack_chosen
+; check whether to execute the attack chosen
+	ld a, [wAIExecuteProcessedAttack]
+	or a
+	jr z, .execute
+
+; set carry and reset Play Area AI score
+; to the previous values.
+	scf
+	jp RetrievePlayAreaAIScoreFromBackup2
+
+.execute
+	ld a, AI_TRAINER_CARD_PHASE_14
 	call AIProcessHandTrainerCards
 
 ; load this attack's damage output against
@@ -5134,39 +5081,51 @@ Func_169fc: ; 169fc (5:69fc)
 	ld a, [wDamage]
 
 	or a
-	jr z, .asm_16a62
-	; if damage is 0, fallthrough
+	jr z, .check_damage_bench
+	; if damage is not 0, fallthrough
 
-.cannot_damage
+.can_damage
 	xor a
 	ld [wcdb4], a
-	jr .asm_16a6d
+	jr .use_attack
 
-.asm_16a62
+.check_damage_bench
+; check if it can otherwise damage player's bench
 	ld a, MOVE_FLAG1_ADDRESS | DAMAGE_TO_OPPONENT_BENCH_F
 	call CheckLoadedMoveFlag
-	jr c, .cannot_damage
+	jr c, .can_damage
+
+; cannot damage either Defending Pokemon or Bench
 	ld hl, wcdb4
 	inc [hl]
-.asm_16a6d
+
+; return carry if attack is chosen
+; and AI tries to use it.
+.use_attack
 	ld a, $01
 	ld [wcddb], a
-	call Func_14145
+	call AITryUseAttack
 	scf
 	ret
-.asm_16a77
-	ld a, [wcdd9]
+
+.dont_attack
+	ld a, [wAIExecuteProcessedAttack]
 	or a
-	jr z, .asm_16a80
-	jp Func_169e3
-.asm_16a80
+	jr z, .failed_to_use
+
+; reset Play Area AI score
+; to the previous values.
+	jp RetrievePlayAreaAIScoreFromBackup2
+
+; return no carry if no viable attack.
+.failed_to_use
 	ld hl, wcdb4
 	inc [hl]
 	or a
 	ret
-; 0x16a86
 
-; determines the AI score of attack index in a.
+; determines the AI score of attack index in a
+; of card in Play Area location hTempPlayAreaLocation_ff9d.
 GetAIScoreOfAttack: ; 16a86 (5:6a86)
 ; initialize AI score.
 	ld [wSelectedAttack], a
@@ -5242,7 +5201,7 @@ GetAIScoreOfAttack: ; 16a86 (5:6a86)
 ; raise AI score by the number of damage counters that this move deals.
 ; if no damage is dealt, subtract AI score. in case wDamage is zero
 ; but wMaxDamage is not, then encourage move afterwards.
-; otherwise, if wMaxDamage is also zero, check for damage against 
+; otherwise, if wMaxDamage is also zero, check for damage against
 ; player's bench, and encourage move in case there is.
 .check_damage
 	xor a
@@ -5291,7 +5250,7 @@ GetAIScoreOfAttack: ; 16a86 (5:6a86)
 	ld a, e
 	call CalculateByteTensDigit
 	call SubFromAIScore
-	
+
 	push de
 	ld a, MOVE_FLAG1_ADDRESS | HIGH_RECOIL_F
 	call CheckLoadedMoveFlag
@@ -5613,7 +5572,7 @@ GetAIScoreOfAttack: ; 16a86 (5:6a86)
 ; isn't (doubly) poisoned already.
 ; if opposing Pokémon is only poisoned and not double poisoned,
 ; and this move has FLAG_2_BIT_6 set, discourage it
-; (possibly to make Nidoking's Toxic attack less likely to be chosen 
+; (possibly to make Nidoking's Toxic attack less likely to be chosen
 ; if the other Pokémon is poisoned.)
 	ld a, MOVE_FLAG1_ADDRESS | INFLICT_POISON_F
 	call CheckLoadedMoveFlag
@@ -5715,7 +5674,6 @@ GetAIScoreOfAttack: ; 16a86 (5:6a86)
 
 .done
 	ret
-; 0x16dcd
 
 ; this function handles moves with the FLAG_3_BIT_1 set,
 ; and makes specific checks in each of these moves
@@ -5737,7 +5695,7 @@ HandleSpecialAIMoves: ; 16dcd (5:6dcd)
 	cp BELLSPROUT
 	jr z, HandleCallForFamily
 	cp EXEGGUTOR
-	jp z, HandleExeggcutorTeleport
+	jp z, HandleExeggutorTeleport
 	cp SCYTHER
 	jp z, HandleSwordsDanceAndFocusEnergy
 	cp KRABBY
@@ -5819,7 +5777,7 @@ HandleNidoranFCallForFamily:
 ; checks for certain card IDs of Fighting color in deck.
 ; if any of them are found, return a score of
 ; $80 + slots available in bench.
-HandleMarowak1CallForFriend
+HandleMarowak1CallForFriend:
 	ld e, GEODUDE
 	ld a, CARD_LOCATION_DECK
 	call CheckIfAnyCardIDinLocation
@@ -5864,7 +5822,7 @@ HandleJigglypuff2FriendshipSong: ; 16ead (5:6ead)
 	ret
 
 ; if AI decides to retreat, return a score of $80 + 10.
-HandleExeggcutorTeleport: ; 16ec2 (5:6ec2)
+HandleExeggutorTeleport: ; 16ec2 (5:6ec2)
 	call AIDecideWhetherToRetreat
 	jp nc, HandleSpecialAIMoves.zero
 	ld a, $8a
@@ -5942,14 +5900,14 @@ HandlePorygonConversion: ; 16f18 (5:6f18)
 	jr nz, .conversion_2
 
 ; conversion 1
-	call CheckIfBenchCardsAreAtHalfHPCanEvolveAndUseSecondMove
+	call CountNumberOfSetUpBenchPokemon
 	cp 2
 	jr c, .low_score
 	ld a, $82
 	ret
 
 .conversion_2
-	call CheckIfBenchCardsAreAtHalfHPCanEvolveAndUseSecondMove
+	call CountNumberOfSetUpBenchPokemon
 	cp 2
 	jr nc, .low_score
 	ld a, $82
@@ -6018,7 +5976,7 @@ HandleNinetalesMixUp: ; 16f4e (5:6f4e)
 	or a
 	jr nz, .loop_hand
 	; is a basic Pokémon card
-	inc b 
+	inc b
 	jr .loop_hand
 .tally_basic_cards
 	ld a, b
@@ -6097,7 +6055,7 @@ HandleElectrode1EnergySpike: ; 16ff2 (5:6ff2)
 	ld e, LIGHTNING_ENERGY
 	call CheckIfAnyCardIDinLocation
 	jp nc, HandleSpecialAIMoves.zero
-	call Func_164a1
+	call AIProcessButDontPlayEnergy_SkipEvolution
 	jp nc, HandleSpecialAIMoves.zero
 	ld a, $83
 	ret
@@ -6117,7 +6075,6 @@ HandleHyperBeam: ; 17005 (5:7005)
 .keep_score
 	ld a, $80
 	ret
-; 0x17019
 
 ; called when second attack is determined by AI to have
 ; more AI score than the first attack, so that it checks
@@ -6125,7 +6082,7 @@ HandleHyperBeam: ; 17005 (5:7005)
 CheckWhetherToSwitchToFirstAttack: ; 17019 (5:7019)
 ; this checks whether the first attack is also viable
 ; (has more than minimum score to be used)
-	ld a, [wPlayAreaAIScore]
+	ld a, [wFirstAttackAIScore]
 	cp $50
 	jr c, .keep_second_attack
 
@@ -6168,9 +6125,8 @@ CheckWhetherToSwitchToFirstAttack: ; 17019 (5:7019)
 	ld a, $01
 	ld [wSelectedAttack], a
 	ret
-; 0x17057
 
-; returns carry if there are 
+; returns carry if there are
 ; any basic Pokémon cards in deck.
 CheckIfAnyBasicPokemonInDeck: ; 17057 (5:7057)
 	ld e, 0
@@ -6200,7 +6156,6 @@ CheckIfAnyBasicPokemonInDeck: ; 17057 (5:7057)
 .set_carry
 	scf
 	ret
-; 0x17080
 
 ; checks in other Play Area for non-basic cards.
 ; afterwards, that card is checked for damage,
@@ -6209,7 +6164,7 @@ CheckIfAnyBasicPokemonInDeck: ; 17057 (5:7057)
 ; return carry and that card's Play Area location in a.
 ; output:
 ;	a = card location of Pokémon card, if found;
-;	cerry set if such a card is found.
+;	carry set if such a card is found.
 LookForCardThatIsKnockedOutOnDevolution: ; 17080 (5:7080)
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	push af
@@ -6254,7 +6209,7 @@ LookForCardThatIsKnockedOutOnDevolution: ; 17080 (5:7080)
 	ldh [hTempPlayAreaLocation_ff9d], a
 	or a
 	ret
-	
+
 .set_carry
 	call SwapTurn
 	pop af
@@ -6262,7 +6217,6 @@ LookForCardThatIsKnockedOutOnDevolution: ; 17080 (5:7080)
 	ld a, c
 	scf
 	ret
-; 0x170c9
 
 ; returns carry if the following conditions are met:
 ;	- arena card HP >= half max HP
@@ -6305,17 +6259,17 @@ CheckIfArenaCardIsAtHalfHPCanEvolveAndUseSecondMove: ; 170c9 (5:70c9)
 .no_carry
 	or a
 	ret
-; 0x17101
 
-; returns carry if at least one Pokémon in bench
-; meets the following conditions:
-;	- card HP >= half max HP
+; count Pokemon in the Bench that
+; meet the following conditions:
+;	- card HP > half max HP
 ;	- card Unknown2's 4 bit is not set or
 ;	  is set but there's no evolution of card in hand/deck
 ;	- card can use second move
-; Also outputs the number of Pokémon in bench
+; Outputs the number of Pokémon in bench
 ; that meet these requirements in a
-CheckIfBenchCardsAreAtHalfHPCanEvolveAndUseSecondMove: ; 17101 (5:7101)
+; and returns carry if at least one is found
+CountNumberOfSetUpBenchPokemon: ; 17101 (5:7101)
 	ldh a, [hTempPlayAreaLocation_ff9d]
 	ld d, a
 	ld a, [wSelectedAttack]
@@ -6333,17 +6287,24 @@ CheckIfBenchCardsAreAtHalfHPCanEvolveAndUseSecondMove: ; 17101 (5:7101)
 	push hl
 	cp $ff
 	jr z, .done
+
 	ld d, a
 	push de
 	push bc
 	call LoadCardDataToBuffer1_FromDeckIndex
 	pop bc
+
+; compares card's current HP with max HP
 	ld a, c
 	add DUELVARS_ARENA_CARD_HP
 	call GetTurnDuelistVariable
 	ld d, a
 	ld a, [wLoadedCard1HP]
 	rrca
+
+; a = max HP / 2
+; d = current HP
+; jumps if (current HP) <= (max HP / 2)
 	cp d
 	pop de
 	jr nc, .next
@@ -6384,10 +6345,137 @@ CheckIfBenchCardsAreAtHalfHPCanEvolveAndUseSecondMove: ; 17101 (5:7101)
 	ret z
 	scf
 	ret
-; 0x17161
 
-Func_17161 ; 17161 (5:7161)
-	INCROM $17161, $171fb
+; handles AI logic to determine some selections regarding certain attacks,
+; if any of these attacks were chosen to be used.
+; returns carry if selection was successful,
+; and no carry if unable to make one.
+; outputs in hTempPlayAreaLocation_ffa1 the chosen parameter.
+AISelectSpecialAttackParameters: ; 17161 (5:7161)
+	ld a, [wSelectedAttack]
+	push af
+	call .SelectAttackParameters
+	pop bc
+	ld a, b
+	ld [wSelectedAttack], a
+	ret
+
+.SelectAttackParameters: ; 1716e (5:716e)
+	ld a, DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	call GetCardIDFromDeckIndex
+	ld a, e
+	cp MEW3
+	jr z, .devolution_beam
+	cp MEWTWO3
+	jr z, .energy_absorption
+	cp MEWTWO2
+	jr z, .energy_absorption
+	cp EXEGGUTOR
+	jr z, .teleport
+	cp ELECTRODE1
+	jr z, .energy_spike
+	; fallthrough
+
+.no_carry
+	or a
+	ret
+
+.devolution_beam
+; in case selected attack is Devolution Beam
+; store in hTempPlayAreaLocation_ffa1
+; the location of card to select to devolve
+	ld a, [wSelectedAttack]
+	or a
+	jp z, .no_carry ; can be jr
+
+	ld a, $01
+	ldh [hTemp_ffa0], a
+	call LookForCardThatIsKnockedOutOnDevolution
+	ldh [hTempPlayAreaLocation_ffa1], a
+
+.set_carry_1
+	scf
+	ret
+
+.energy_absorption
+; in case selected attack is Energy Absorption
+; make list from energy cards in Discard Pile
+	ld a, [wSelectedAttack]
+	or a
+	jp nz, .no_carry  ; can be jr
+
+	ld a, $ff
+	ldh [hTempPlayAreaLocation_ffa1], a
+	ldh [hTempRetreatCostCards], a
+
+; search for Psychic energy cards in Discard Pile
+	ld e, PSYCHIC_ENERGY
+	ld a, CARD_LOCATION_DISCARD_PILE
+	call CheckIfAnyCardIDinLocation
+	ldh [hTemp_ffa0], a
+	farcall CreateEnergyCardListFromOpponentDiscardPile
+
+; find any energy card different from
+; the one found by CheckIfAnyCardIDinLocation.
+; since using this move requires a Psychic energy card,
+; and another one is in hTemp_ffa0,
+; then any other energy card would account
+; for the Energy Cost of Psyburn.
+	ld hl, wDuelTempList
+.loop_energy_cards
+	ld a, [hli]
+	cp $ff
+	jr z, .set_carry_2
+	ld b, a
+	ldh a, [hTemp_ffa0]
+	cp b
+	jr z, .loop_energy_cards ; same card, keep looking
+
+; store the deck index of energy card found
+	ld a, b
+	ldh [hTempPlayAreaLocation_ffa1], a
+	; fallthrough
+
+.set_carry_2
+	scf
+	ret
+
+.teleport
+; in case selected attack is Teleport
+; decide Bench card to switch to.
+	ld a, [wSelectedAttack]
+	or a
+	jp nz, .no_carry  ; can be jr
+	call AIDecideBenchPokemonToSwitchTo
+	jr c, .no_carry
+	ldh [hTemp_ffa0], a
+	scf
+	ret
+
+.energy_spike
+; in case selected attack is Energy Spike
+; decide basic energy card to fetch from Deck.
+	ld a, [wSelectedAttack]
+	or a
+	jp z, .no_carry  ; can be jr
+
+	ld a, CARD_LOCATION_DECK
+	ld e, LIGHTNING_ENERGY
+
+; if none were found in Deck, return carry...
+	call CheckIfAnyCardIDinLocation
+	ldh [hTemp_ffa0], a
+	jp nc, .no_carry  ; can be jr
+
+; ...else find a suitable Play Area Pokemon to
+; attach the energy card to.
+	call AIProcessButDontPlayEnergy_SkipEvolution
+	jp nc, .no_carry  ; can be jr
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	ldh [hTempPlayAreaLocation_ffa1], a
+	scf
+	ret
 
 ; return carry if Pokémon at play area location
 ; in hTempPlayAreaLocation_ff9d does not have
@@ -6440,7 +6528,7 @@ CheckIfNoSurplusEnergyForMove: ; 171fb (5:71fb)
 	inc de
 	dec c
 	jr nz, .loop
-	
+
 	; colorless
 	ld a, [de]
 	swap a
@@ -6458,17 +6546,16 @@ CheckIfNoSurplusEnergyForMove: ; 171fb (5:71fb)
 	; exactly the amount of energy needed
 	scf
 	ret
-; 0x17258
 
-; takes as input the energy cost of a move for a 
+; takes as input the energy cost of a move for a
 ; particular energy, stored in the lower nibble of a
 ; if the move costs some amount of this energy, the lower nibble of a != 0,
 ; and this amount is stored in wTempLoadedMoveEnergyCost
 ; also adds the amount of energy still needed
 ; to wTempLoadedMoveEnergyNeededAmount
 ; input:
-; 	a    = this energy cost of move (lower nibble)
-; 	[hl] = attached energy
+;	a    = this energy cost of move (lower nibble)
+;	[hl] = attached energy
 ; output:
 ;	carry set if not enough of this energy type attached
 CalculateParticularAttachedEnergyNeeded: ; 17258 (5:7258)
@@ -6492,7 +6579,6 @@ CalculateParticularAttachedEnergyNeeded: ; 17258 (5:7258)
 	pop bc
 	ld [wTempLoadedMoveEnergyNeededAmount], a
 	jr .done
-; 0x17274
 
 ; return carry if there is a card that
 ; can evolve a Pokémon in hand or deck.
@@ -6545,15 +6631,179 @@ CheckCardEvolutionInHandOrDeck: ; 17274 (5:7274)
 	ld a, e
 	scf
 	ret
-; 0x172af
 
-Func_172af ; 172af (5:72af)
-	INCROM $172af, $17383
+; sets up the inital hand of boss deck.
+; always draws at least 2 Basic Pokemon cards and 2 Energy cards.
+; also sets up so that the next cards to be drawn have
+; some minimum number of Basic Pokemon and Energy cards.
+SetUpBossStartingHandAndDeck: ; 172af (5:72af)
+; shuffle all hand cards in deck
+	ld a, DUELVARS_HAND
+	call GetTurnDuelistVariable
+	ld b, STARTING_HAND_SIZE
+.loop_hand
+	ld a, [hl]
+	call RemoveCardFromHand
+	call ReturnCardToDeck
+	dec b
+	jr nz, .loop_hand
+	jr .count_energy_basic
+
+.shuffle_deck
+	call ShuffleDeck
+
+; count number of Energy and basic Pokemon cards
+; in the first STARTING_HAND_SIZE in deck.
+.count_energy_basic
+	xor a
+	ld [wce06], a
+	ld [wce08], a
+
+	ld a, DUELVARS_DECK_CARDS
+	call GetTurnDuelistVariable
+	ld b, STARTING_HAND_SIZE
+.loop_deck_1
+	ld a, [hli]
+	push bc
+	call LoadCardDataToBuffer1_FromDeckIndex
+	pop bc
+	ld a, [wLoadedCard1Type]
+	cp TYPE_ENERGY
+	jr c, .pokemon_card_1
+	cp TYPE_TRAINER
+	jr z, .next_card_deck_1
+
+; energy card
+	ld a, [wce08]
+	inc a
+	ld [wce08], a
+	jr .next_card_deck_1
+
+.pokemon_card_1
+	ld a, [wLoadedCard1Stage]
+	or a
+	jr nz, .next_card_deck_1 ; not basic
+	ld a, [wce06]
+	inc a
+	ld [wce06], a
+
+.next_card_deck_1
+	dec b
+	jr nz, .loop_deck_1
+
+; tally the number of Energy and basic Pokemon cards
+; and if any of them is smaller than 2, re-shuffle deck.
+	ld a, [wce06]
+	cp 2
+	jr c, .shuffle_deck
+	ld a, [wce08]
+	cp 2
+	jr c, .shuffle_deck
+
+; now check the following 6 cards (prize cards).
+; re-shuffle deck if any of these cards is listed in wAICardListAvoidPrize.
+	ld b, 6
+.check_card_ids
+	ld a, [hli]
+	push bc
+	call .CheckIfIDIsInList
+	pop bc
+	jr c, .shuffle_deck
+	dec b
+	jr nz, .check_card_ids
+
+; finally, check 6 cards after that.
+; if Energy or Basic Pokemon counter is below 4
+; (counting with the ones found in the initial hand)
+; then re-shuffle deck.
+	ld b, 6
+.loop_deck_2
+	ld a, [hli]
+	push bc
+	call LoadCardDataToBuffer1_FromDeckIndex
+	pop bc
+	ld a, [wLoadedCard1Type]
+	cp TYPE_ENERGY
+	jr c, .pokemon_card_2
+	cp TYPE_TRAINER
+	jr z, .next_card_deck_2
+
+; energy card
+	ld a, [wce08]
+	inc a
+	ld [wce08], a
+	jr .next_card_deck_2
+
+.pokemon_card_2
+	ld a, [wLoadedCard1Stage]
+	or a
+	jr nz, .next_card_deck_2
+	ld a, [wce06]
+	inc a
+	ld [wce06], a
+
+.next_card_deck_2
+	dec b
+	jr nz, .loop_deck_2
+
+	ld a, [wce06]
+	cp 4
+	jp c, .shuffle_deck
+	ld a, [wce08]
+	cp 4
+	jp c, .shuffle_deck
+
+; draw new set of hand cards
+	ld a, DUELVARS_DECK_CARDS
+	call GetTurnDuelistVariable
+	ld b, STARTING_HAND_SIZE
+.draw_loop
+	ld a, [hli]
+	call SearchCardInDeckAndAddToHand
+	call AddCardToHand
+	dec b
+	jr nz, .draw_loop
+	ret
+
+; expectation: return carry if card ID corresponding
+; to the input deck index is listed in wAICardListAvoidPrize;
+; reality: always returns no carry because when checking terminating
+; byte in wAICardListAvoidPrize ($00), it wrongfully uses 'cp a' instead of 'or a',
+; so it always ends up returning in the first item in list.
+; input:
+;	- a = deck index of card to check
+.CheckIfIDIsInList ; 17366 (5:7366)
+	ld b, a
+	ld a, [wAICardListAvoidPrize + 1]
+	or a
+	ret z ; null
+	push hl
+	ld h, a
+	ld a, [wAICardListAvoidPrize]
+	ld l, a
+
+	ld a, b
+	call GetCardIDFromDeckIndex
+.loop_id_list
+	ld a, [hli]
+	cp a ; bug, should be 'or a'
+	jr z, .false
+	cp e
+	jr nz, .loop_id_list
+
+; true
+	pop hl
+	scf
+	ret
+.false
+	pop hl
+	or a
+	ret
 
 ; returns carry if Pokemon at PLAY_AREA* in a
 ; can damage defending Pokémon with any of its moves
 ; input:
-; 	a = location of card to check
+;	a = location of card to check
 CheckIfCanDamageDefendingPokemon: ; 17383 (5:7383)
 	ldh [hTempPlayAreaLocation_ff9d], a
 	xor a ; first move
@@ -6583,7 +6833,6 @@ CheckIfCanDamageDefendingPokemon: ; 17383 (5:7383)
 .set_carry
 	scf
 	ret
-; 0x173b1
 
 ; checks if defending Pokémon can knock out
 ; card at hTempPlayAreaLocation_ff9d with any of its moves
@@ -6591,7 +6840,7 @@ CheckIfCanDamageDefendingPokemon: ; 17383 (5:7383)
 ; sets carry if any on the moves knocks out
 ; also outputs the largest damage dealt in a
 ; input:
-;	[hTempPlayAreaLocation_ff9d] = locaion of card to check
+;	[hTempPlayAreaLocation_ff9d] = location of card to check
 ; output:
 ;	a = largest damage of both moves
 ;	carry set if can knock out
@@ -6627,7 +6876,6 @@ CheckIfDefendingPokemonCanKnockOut: ; 173b1 (5:73b1)
 .set_carry
 	scf
 	ret
-; 0x173e4
 
 ; return carry if defending Pokémon can knock out
 ; card at hTempPlayAreaLocation_ff9d
@@ -6666,7 +6914,6 @@ CheckIfDefendingPokemonCanKnockOutWithMove: ; 173e4 (5:73e4)
 .done
 	or a
 	ret
-; 0x17414
 
 ; sets carry if Opponent's deck ID
 ; is between LEGENDARY_MOLTRES_DECK_ID (inclusive)
@@ -6687,7 +6934,6 @@ CheckIfOpponentHasBossDeckID: ; 17414 (5:7414)
 	pop af
 	or a
 	ret
-; 0x17426
 
 ; sets carry if not a boss fight
 ; and if s0a00a == 0
@@ -6706,15 +6952,14 @@ CheckIfNotABossDeckID: ; 17426 (5:7426)
 .set_carry
 	scf
 	ret
-; 0x1743b
 
 ; probability to return carry:
 ; - 50% if deck AI is playing is on the list;
 ; - 25% for all other decks;
 ; - 0% for boss decks.
 ; used for certain decks to randomly choose
-; not to play Trainer card in hand.
-ChooseRandomlyNotToPlayTrainerCard: ; 1743b (5:743b)
+; not to play Trainer card or use PKMN Power
+AIChooseRandomlyNotToDoAction: ; 1743b (5:743b)
 ; boss decks always use Trainer cards.
 	push hl
 	push de
@@ -6754,7 +6999,6 @@ ChooseRandomlyNotToPlayTrainerCard: ; 1743b (5:743b)
 	pop de
 	pop hl
 	ret
-; 0x17474
 
 ; checks if any bench Pokémon has same ID
 ; as input, and sets carry if it has more than
@@ -6801,7 +7045,7 @@ CheckForBenchIDAtHalfHPAndCanUseSecondMove: ; 17474 (5:7474)
 	ld hl, wcdf9
 	cp [hl]
 	jr nz, .loop
-	
+
 	ld a, c
 	ldh [hTempPlayAreaLocation_ff9d], a
 	ld a, $01 ; second move
@@ -6823,9 +7067,8 @@ CheckForBenchIDAtHalfHPAndCanUseSecondMove: ; 17474 (5:7474)
 	ret z
 	scf
 	ret
-; 0x174cd
 
-; add 5 to wcde4 AI score corresponding to all cards
+; add 5 to wPlayAreaEnergyAIScore AI score corresponding to all cards
 ; in bench that have same ID as register a
 ; input:
 ;	a = card ID to look for
@@ -6848,20 +7091,19 @@ RaiseAIScoreToAllMatchingIDsInBench: ; 174cd (5:74cd)
 	ld c, e
 	ld b, $00
 	push hl
-	ld hl, wcde4
+	ld hl, wPlayAreaEnergyAIScore
 	add hl, bc
 	ld a, 5
 	add [hl]
 	ld [hl], a
 	pop hl
 	jr .loop
-; 0x174f2
 
 ; goes through each play area Pokémon, and
 ; for all cards of the same ID, determine which
 ; card has highest value calculated from Func_17583
-; the card with highest value gets increased wcde4
-; while all others get decreased wcde4
+; the card with highest value gets increased wPlayAreaEnergyAIScore
+; while all others get decreased wPlayAreaEnergyAIScore
 Func_174f2: ; 174f2 (5:74f2)
 	ld a, MAX_PLAY_AREA_POKEMON
 	ld hl, wcdfa
@@ -6880,6 +7122,7 @@ Func_174f2: ; 174f2 (5:74f2)
 	ld a, [hli]
 	cp $ff
 	ret z
+
 	ld [wcdf9], a
 	push de
 	push hl
@@ -6945,11 +7188,11 @@ Func_174f2: ; 174f2 (5:74f2)
 	jr .loop_2
 
 ; c = play area location of highest score
-; decrease wcde4 score for all cards with same ID
+; decrease wPlayAreaEnergyAIScore score for all cards with same ID
 ; except for the one with highest score
-; increase wcde4 score for card with highest ID
+; increase wPlayAreaEnergyAIScore score for card with highest ID
 .asm_17560
-	ld hl, wcde4
+	ld hl, wPlayAreaEnergyAIScore
 	ld de, wcdea
 	ld b, PLAY_AREA_ARENA
 .loop_3
@@ -6959,7 +7202,7 @@ Func_174f2: ; 174f2 (5:74f2)
 	ld a, [de]
 	or a
 	jr z, .check_next
-; decrease score	
+; decrease score
 	dec [hl]
 	jr .check_next
 .card_with_highest
@@ -6978,7 +7221,6 @@ Func_174f2: ; 174f2 (5:74f2)
 	pop de
 	pop hl
 	jp .loop_play_area
-; 0x17583
 
 ; loads wcdea + play area location in e
 ; with nenergy  * 2 + $80 - floor(dam / 10)
@@ -7008,7 +7250,6 @@ Func_17583: ; 17583 (5:7583)
 	pop de
 	pop hl
 	ret
-; 0x175a8
 
 ; counts how many play area locations in wcdea
 ; are != 0, and outputs result in a
@@ -7029,7 +7270,6 @@ Func_175a8: ; 175a8 (5:75a8)
 	ld a, d
 	cp 2
 	ret
-; 0x175bd
 
 ; handle how AI scores giving out Energy Cards
 ; when using Legendary Articuno deck
@@ -7041,7 +7281,6 @@ HandleLegendaryArticunoEnergyScoring: ; 175bd (5:75bd)
 .articuno_deck
 	call ScoreLegendaryArticunoCards
 	ret
-; 0x175c9
 
-Func_175c9 ; 175c9 (5:75c9)
+Func_175c9: ; 175c9 (5:75c9)
 	INCROM $175c9, $18000

@@ -42,9 +42,9 @@ EkansWrapEffectCommands:
 	db  $00
 
 ArbokTerrorStrikeEffectCommands:
-	dbw EFFECTCMDTYPE_AFTER_DAMAGE, $4726
-	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, $470a
-	dbw EFFECTCMDTYPE_SWITCH_DEFENDING_PKMN, $470a
+	dbw EFFECTCMDTYPE_AFTER_DAMAGE, TerrorStrike_SwitchDefendingPokemon
+	dbw EFFECTCMDTYPE_REQUIRE_SELECTION, TerrorStrike_50PercentSelectSwitchPokemon
+	dbw EFFECTCMDTYPE_SWITCH_DEFENDING_PKMN, TerrorStrike_50PercentSelectSwitchPokemon
 	db  $00
 
 ArbokPoisonFangEffectCommands:
@@ -1491,7 +1491,7 @@ FullHealEffectCommands:
 	db  $00
 
 ImposterProfessorOakEffectCommands:
-	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, $74e1
+	dbw EFFECTCMDTYPE_BEFORE_DAMAGE, ImposterProfessorOakEffect
 	db  $00
 
 ComputerSearchEffectCommands:

@@ -114,7 +114,7 @@ _AIProcessHandTrainerCards: ; 200e5 (8:40e5)
 	jp c, .next_in_data
 
 ; AI can randomly choose not to play card.
-	farcall ChooseRandomlyNotToPlayTrainerCard
+	farcall AIChooseRandomlyNotToDoAction
 	jr c, .next_in_data
 
 ; call routine to decide whether to play Trainer card
@@ -194,7 +194,6 @@ _AIProcessHandTrainerCards: ; 200e5 (8:40e5)
 .pop_hl
 	pop hl
 	jp .loop_hand
-; 0x201b5
 
 ; makes AI use Potion card.
 AIPlay_Potion: ; 201b5 (8:41b5)
@@ -212,7 +211,6 @@ AIPlay_Potion: ; 201b5 (8:41b5)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x201d1
 
 ; if AI doesn't decide to retreat this card,
 ; check if defending Pokémon can KO active card
@@ -256,7 +254,6 @@ AIDecide_Potion1: ; 201d1 (8:41d1)
 .no_carry
 	or a
 	ret
-; 0x20204
 
 ; finds a card in Play Area to use Potion on.
 ; output:
@@ -310,7 +307,7 @@ AIDecide_Potion2: ; 20204 (8:4204)
 	call GetTurnDuelistVariable
 	cp $ff
 	ret z
-	call .check_boost_if_taken_damage	
+	call .check_boost_if_taken_damage
 	jr c, .has_boost_damage
 	call GetCardDamage
 	cp 20 ; if damage >= 20
@@ -356,7 +353,6 @@ AIDecide_Potion2: ; 20204 (8:4204)
 .no_carry
 	or a
 	ret
-; 0x2027e
 
 ; return carry if either of the attacks are usable
 ; and have the BOOST_IF_TAKEN_DAMAGE effect.
@@ -385,7 +381,6 @@ AIDecide_Potion2: ; 20204 (8:4204)
 	pop de
 	scf
 	ret
-; 0x202a8
 
 ; makes AI use Super Potion card.
 AIPlay_SuperPotion: ; 202a8 (8:42a8)
@@ -406,7 +401,6 @@ AIPlay_SuperPotion: ; 202a8 (8:42a8)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x202cc
 
 ; if AI doesn't decide to retreat this card and card has
 ; any energy cards attached,  check if defending Pokémon can KO
@@ -451,7 +445,6 @@ AIDecide_SuperPotion1: ; 202cc (8:42cc)
 .no_carry
 	or a
 	ret
-; 0x20305
 
 ; returns carry if card has energies attached.
 .check_attached_energy ; 20305 (8:4305)
@@ -461,7 +454,6 @@ AIDecide_SuperPotion1: ; 202cc (8:42cc)
 	ret z
 	scf
 	ret
-; 0x2030f
 
 ; finds a card in Play Area to use Super Potion on.
 ; output:
@@ -568,7 +560,6 @@ AIDecide_SuperPotion2: ; 2030f (8:430f)
 .no_carry
 	or a
 	ret
-; 0x20394
 
 ; returns carry if card has energies attached.
 .check_attached_energy ; 20394 (8:4394)
@@ -578,7 +569,6 @@ AIDecide_SuperPotion2: ; 2030f (8:430f)
 	ret z
 	scf
 	ret
-; 0x2039e
 
 ; return carry if either of the attacks are usable
 ; and have the BOOST_IF_TAKEN_DAMAGE effect.
@@ -607,7 +597,6 @@ AIDecide_SuperPotion2: ; 2030f (8:430f)
 	pop de
 	scf
 	ret
-; 0x203c8
 
 ; returns carry if discarding energy card renders any attack unusable,
 ; given that they have enough energy to be used before discarding.
@@ -642,7 +631,6 @@ AIDecide_SuperPotion2: ; 2030f (8:430f)
 	pop de
 	scf
 	ret
-; 0x203f8
 
 AIPlay_Defender: ; 203f8 (8:43f8)
 	ld a, [wAITrainerCardToPlay]
@@ -652,7 +640,6 @@ AIPlay_Defender: ; 203f8 (8:43f8)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x20406
 
 ; returns carry if using Defender can prevent a KO
 ; by the defending Pokémon.
@@ -738,7 +725,6 @@ AIDecide_Defender1: ; 20406 (8:4406)
 .no_carry
 	or a
 	ret
-; 0x20486
 
 ; return carry if using Defender prevents Pokémon
 ; from being knocked out by an attack with recoil.
@@ -813,7 +799,6 @@ AIDecide_Defender2: ; 20486 (8:4486)
 .no_carry
 	or a
 	ret
-; 0x204e8
 
 AIPlay_Pluspower: ; 204e8 (8:44e8)
 	ld a, [wCurrentAIFlags]
@@ -826,7 +811,6 @@ AIPlay_Pluspower: ; 204e8 (8:44e8)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x20501
 
 ; returns carry if using a Pluspower can KO defending Pokémon
 ; if active card cannot KO without the boost.
@@ -901,7 +885,6 @@ AIDecide_Pluspower1: ; 20501 (8:4501)
 	ld a, SECOND_ATTACK
 	scf
 	ret
-; 0x20562
 
 ; return carry if move is useable and KOs
 ; defending Pokémon with Pluspower boost.
@@ -929,7 +912,6 @@ AIDecide_Pluspower1: ; 20501 (8:4501)
 .unusable
 	or a
 	ret
-; 0x20589
 
 ; returns carry if Pluspower boost does
 ; not exceed 30 damage when facing Mr. Mime.
@@ -949,7 +931,6 @@ AIDecide_Pluspower1: ; 20501 (8:4501)
 ; damage is >= 30 but not Mr. Mime
 	scf
 	ret
-; 0x205a5
 
 ; returns carry 7/10 of the time
 ; if selected move is useable, can't KO without Pluspower boost
@@ -970,7 +951,6 @@ AIDecide_Pluspower2: ; 205a5 (8:45a5)
 .no_carry
 	or a
 	ret
-; 0x205bb
 
 ; returns carry if Pluspower boost does
 ; not exceed 30 damage when facing Mr. Mime.
@@ -990,7 +970,6 @@ AIDecide_Pluspower2: ; 205a5 (8:45a5)
 ; damage is >= 30 but not Mr. Mime
 	scf
 	ret
-; 0x205d7
 
 ; return carry if move is useable but cannot KO.
 .check_can_ko ; 205d7 (8:45d7)
@@ -1011,7 +990,6 @@ AIDecide_Pluspower2: ; 205a5 (8:45a5)
 .unuseable
 	or a
 	ret
-; 0x205f6
 
 ; return carry 7/10 of the time if
 ; move is useable and minimum damage > 0.
@@ -1027,7 +1005,6 @@ AIDecide_Pluspower2: ; 205a5 (8:45a5)
 	call Random
 	cp 3
 	ret
-; 0x20612
 
 AIPlay_Switch: ; 20612 (8:4612)
 	ld a, [wCurrentAIFlags]
@@ -1042,7 +1019,6 @@ AIPlay_Switch: ; 20612 (8:4612)
 	xor a
 	ld [wcdb4], a
 	ret
-; 0x2062e
 
 ; returns carry if the active card has less energy cards
 ; than the retreat cost and if AI can't play an energy
@@ -1092,7 +1068,6 @@ AIDecide_Switch: ; 2062e (8:462e)
 	farcall AIDecideBenchPokemonToSwitchTo
 	ccf
 	ret
-; 0x20666
 
 AIPlay_GustOfWind: ; 20666 (8:4666)
 	ld a, [wCurrentAIFlags]
@@ -1105,7 +1080,6 @@ AIPlay_GustOfWind: ; 20666 (8:4666)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x2067e
 
 AIDecide_GustOfWind: ; 2067e (8:467e)
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -1481,7 +1455,6 @@ AIDecide_GustOfWind: ; 2067e (8:467e)
 	pop bc
 	scf
 	ret
-; 0x2086d
 
 AIPlay_Bill: ; 2086d (8:486d)
 	ld a, [wAITrainerCardToPlay]
@@ -1489,7 +1462,6 @@ AIPlay_Bill: ; 2086d (8:486d)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x20878
 
 ; return carry if cards in deck > 9
 AIDecide_Bill: ; 20878 (8:4878)
@@ -1497,7 +1469,6 @@ AIDecide_Bill: ; 20878 (8:4878)
 	call GetTurnDuelistVariable
 	cp DECK_SIZE - 9
 	ret
-; 0x20880
 
 AIPlay_EnergyRemoval: ; 20880 (8:4880)
 	ld a, [wAITrainerCardToPlay]
@@ -1509,7 +1480,6 @@ AIPlay_EnergyRemoval: ; 20880 (8:4880)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x20895
 
 ; picks an energy card in the player's Play Area to remove
 AIDecide_EnergyRemoval: ; 20895 (8:4895)
@@ -1712,7 +1682,6 @@ AIDecide_EnergyRemoval: ; 20895 (8:4895)
 .skip_2
 	pop de
 	ret
-; 0x20994
 
 AIPlay_SuperEnergyRemoval: ; 20994 (8:4994)
 	ld a, [wAITrainerCardToPlay]
@@ -1732,7 +1701,6 @@ AIPlay_SuperEnergyRemoval: ; 20994 (8:4994)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x209bc
 
 ; picks two energy cards in the player's Play Area to remove
 AIDecide_SuperEnergyRemoval: ; 209bc (8:49bc)
@@ -1746,7 +1714,7 @@ AIDecide_SuperEnergyRemoval: ; 209bc (8:49bc)
 	call GetTurnDuelistVariable
 	cp $ff
 	jr z, .exit
-	
+
 	ld d, a
 	push de
 	call .LookForNonDoubleColorless
@@ -1949,7 +1917,6 @@ AIDecide_SuperEnergyRemoval: ; 209bc (8:49bc)
 	pop de
 	scf
 	ret
-; 0x20ac1
 
 ; stores in wce06 the highest damaging attack
 ; for the card in play area location in e
@@ -2001,7 +1968,6 @@ AIDecide_SuperEnergyRemoval: ; 209bc (8:49bc)
 .skip_2
 	pop de
 	ret
-; 0x20b06
 
 AIPlay_PokemonBreeder: ; 20b06 (8:4b06)
 	ld a, [wAITrainerCardToPlay]
@@ -2013,7 +1979,6 @@ AIPlay_PokemonBreeder: ; 20b06 (8:4b06)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x20b1b
 
 AIDecide_PokemonBreeder: ; 20b1b (8:4b1b)
 	call IsPrehistoricPowerActive
@@ -2357,7 +2322,6 @@ AIDecide_PokemonBreeder: ; 20b1b (8:4b1b)
 	pop af
 	scf
 	ret
-; 0x20cae
 
 AIPlay_ProfessorOak: ; 20cae (8:4cae)
 	ld a, [wCurrentAIFlags]
@@ -2368,7 +2332,6 @@ AIPlay_ProfessorOak: ; 20cae (8:4cae)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x20cc1
 
 ; sets carry if AI determines a score of playing
 ; Professor Oak is over a certain threshold.
@@ -2537,7 +2500,6 @@ AIDecide_ProfessorOak: ; 20cc1 (8:4cc1)
 .set_carry
 	scf
 	ret
-; 0x20d9d
 
 ; return carry if there's a card in the hand that
 ; can evolve the card in Play Area location in e.
@@ -2578,7 +2540,6 @@ AIDecide_ProfessorOak: ; 20cc1 (8:4cc1)
 
 	scf
 	ret
-; 0x20dc3
 
 ; handles Legendary Articuno Deck AI logic.
 .HandleLegendaryArticunoDeck ; 20dc3 (8:4dc3)
@@ -2646,7 +2607,6 @@ AIDecide_ProfessorOak: ; 20cc1 (8:4cc1)
 .no_carry_articuno
 	or a
 	ret
-; 0x20e11
 
 ; handles Excavation deck AI logic.
 ; sets score depending on whether there's no
@@ -2668,7 +2628,6 @@ AIDecide_ProfessorOak: ; 20cc1 (8:4cc1)
 	ld a, $1e
 	ld [wce06], a
 	jp .check_cards_hand
-; 0x20e2c
 
 ; handles Wonders of Science AI logic.
 ; if there's either Grimer or Muk in hand,
@@ -2688,7 +2647,6 @@ AIDecide_ProfessorOak: ; 20cc1 (8:4cc1)
 .found_grimer_or_muk
 	or a
 	ret
-; 0x20e44
 
 AIPlay_EnergyRetrieval: ; 20e44 (8:4e44)
 	ld a, [wCurrentAIFlags]
@@ -2710,7 +2668,6 @@ AIPlay_EnergyRetrieval: ; 20e44 (8:4e44)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x20e6e
 
 ; checks whether AI can play Energy Retrieval and
 ; picks the energy cards from the discard pile,
@@ -2847,7 +2804,6 @@ AIDecide_EnergyRetrieval: ; 20e6e (8:4e6e)
 	ld a, [wce06]
 	scf
 	ret
-; 0x20f27
 
 ; remove an element from the list
 ; and shortens it accordingly
@@ -2870,7 +2826,6 @@ RemoveCardFromList: ; 20f27 (8:4f27)
 	pop hl
 	pop de
 	ret
-; 0x20f38
 
 ; finds duplicates in card list in hl.
 ; if a duplicate of Pokemon cards are found, return in
@@ -2947,7 +2902,6 @@ FindDuplicateCards: ; 20f38 (8:4f38)
 ; of either Pokemon or Non-Pokemon cards
 	or a
 	ret
-; 0x20f80
 
 AIPlay_SuperEnergyRetrieval: ; 20f80 (8:4f80)
 	ld a, [wCurrentAIFlags]
@@ -2979,7 +2933,6 @@ AIPlay_SuperEnergyRetrieval: ; 20f80 (8:4f80)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x20fc1
 
 AIDecide_SuperEnergyRetrieval: ; 20fc1 (8:4fc1)
 ; return no carry if no cards in hand
@@ -3160,7 +3113,6 @@ AIDecide_SuperEnergyRetrieval: ; 20fc1 (8:4fc1)
 	ld a, [wce06]
 	scf
 	ret
-; 0x210d5
 
 ; finds the card with deck index a in list hl,
 ; and removes it from the list.
@@ -3179,7 +3131,6 @@ FindAndRemoveCardFromList: ; 210d5 (8:50d5)
 	call RemoveCardFromList
 	pop hl
 	ret
-; 0x210e0
 
 AIPlay_PokemonCenter: ; 210e0 (8:50e0)
 	ld a, [wAITrainerCardToPlay]
@@ -3187,7 +3138,6 @@ AIPlay_PokemonCenter: ; 210e0 (8:50e0)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x210eb
 
 AIDecide_PokemonCenter: ; 210eb (8:50eb)
 	xor a
@@ -3280,7 +3230,6 @@ AIDecide_PokemonCenter: ; 210eb (8:50eb)
 .no_carry
 	or a
 	ret
-; 0x21170
 
 AIPlay_ImposterProfessorOak: ; 21170 (8:5170)
 	ld a, [wAITrainerCardToPlay]
@@ -3288,7 +3237,6 @@ AIPlay_ImposterProfessorOak: ; 21170 (8:5170)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x2117b
 
 ; sets carry depending on player's number of cards
 ; in deck in in hand.
@@ -3318,7 +3266,6 @@ AIDecide_ImposterProfessorOak: ; 2117b (8:517b)
 .set_carry
 	scf
 	ret
-; 0x2119a
 
 AIPlay_EnergySearch: ; 2119a (8:519a)
 	ld a, [wAITrainerCardToPlay]
@@ -3328,7 +3275,6 @@ AIPlay_EnergySearch: ; 2119a (8:519a)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x211aa
 
 ; AI checks for playing Energy Search
 AIDecide_EnergySearch: ; 211aa (8:51aa)
@@ -3390,7 +3336,6 @@ AIDecide_EnergySearch: ; 211aa (8:51aa)
 	jr c, .no_carry
 	scf
 	ret
-; 0x211f1
 
 ; return carry if cards in wDuelTempList are not
 ; useful to any of the Play Area Pokemon
@@ -3441,7 +3386,6 @@ AIDecide_EnergySearch: ; 211aa (8:51aa)
 
 	scf
 	ret
-; 0x2122e
 
 ; checks whether there are useful energies
 ; only for Fire and Lightning type Pokemon cards
@@ -3505,7 +3449,6 @@ AIDecide_EnergySearch: ; 211aa (8:51aa)
 ; for Fire/Lightning type Pokemon card.
 	scf
 	ret
-; 0x21273
 
 ; checks whether there are useful energies
 ; only for Grass type Pokemon cards
@@ -3566,7 +3509,6 @@ AIDecide_EnergySearch: ; 211aa (8:51aa)
 ; for Grass type Pokemon card.
 	scf
 	ret
-; 0x212b4
 
 AIPlay_Pokedex: ; 212b4 (8:52b4)
 	ld a, [wAITrainerCardToPlay]
@@ -3586,12 +3528,11 @@ AIPlay_Pokedex: ; 212b4 (8:52b4)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x212dc
 
 AIDecide_Pokedex: ; 212dc (8:52dc)
-	ld a, [wcda6]
-	cp $06
-	jr c, .no_carry
+	ld a, [wAIPokedexCounter]
+	cp 5 + 1
+	jr c, .no_carry ; return if counter hasn't reached 6 yet
 
 ; return no carry if number of cards in deck <= 4
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
@@ -3616,7 +3557,6 @@ AIDecide_Pokedex: ; 212dc (8:52dc)
 	ld a, [wOpponentDeckID]
 	cp WONDERS_OF_SCIENCE_DECK_ID
 	jp PickPokedexCards ; bug, should be jp nz
-; 0x212ff
 
 ; picks order of the cards in deck from the effects of Pokedex.
 ; prioritises Pokemon cards, then Trainer cards, then energy cards.
@@ -3624,7 +3564,7 @@ AIDecide_Pokedex: ; 212dc (8:52dc)
 PickPokedexCards_Unreferenced: ; 212ff (8:52ff)
 ; unreferenced
 	xor a
-	ld [wcda6], a
+	ld [wAIPokedexCounter], a ; reset counter
 
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	call GetTurnDuelistVariable
@@ -3739,7 +3679,6 @@ PickPokedexCards_Unreferenced: ; 212ff (8:52ff)
 .done
 	scf
 	ret
-; 0x21383
 
 .GetCardType ; 21383 (8:5383)
 	push bc
@@ -3749,14 +3688,13 @@ PickPokedexCards_Unreferenced: ; 212ff (8:52ff)
 	pop de
 	pop bc
 	ret
-; 0x2138e
 
 ; picks order of the cards in deck from the effects of Pokedex.
 ; prioritises energy cards, then Pokemon cards, then Trainer cards.
 ; stores the resulting order in wce1a.
 PickPokedexCards: ; 2138e (8:538e)
 	xor a
-	ld [wcda6], a
+	ld [wAIPokedexCounter], a ; reset counter ; reset counter
 
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	call GetTurnDuelistVariable
@@ -3871,7 +3809,6 @@ PickPokedexCards: ; 2138e (8:538e)
 .done
 	scf
 	ret
-; 0x21412
 
 .GetCardType ; 21412 (8:5412)
 	push bc
@@ -3881,7 +3818,6 @@ PickPokedexCards: ; 2138e (8:538e)
 	pop de
 	pop bc
 	ret
-; 0x2141d
 
 AIPlay_FullHeal: ; 2141d (8:541d)
 	ld a, [wAITrainerCardToPlay]
@@ -3889,7 +3825,6 @@ AIPlay_FullHeal: ; 2141d (8:541d)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x21428
 
 AIDecide_FullHeal: ; 21428 (8:5428)
 	ld a, DUELVARS_ARENA_CARD_STATUS
@@ -3976,7 +3911,6 @@ AIDecide_FullHeal: ; 21428 (8:5428)
 	jr nz, .set_carry
 ; if not, return no carry.
 	jr .no_carry
-; 0x21497
 
 AIPlay_MrFuji: ; 21497 (8:5497)
 	ld a, [wAITrainerCardToPlay]
@@ -3986,7 +3920,6 @@ AIPlay_MrFuji: ; 21497 (8:5497)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x214a7
 
 ; AI logic for playing Mr Fuji
 AIDecide_MrFuji: ; 214a7 (8:54a7)
@@ -4050,7 +3983,6 @@ AIDecide_MrFuji: ; 214a7 (8:54a7)
 
 	scf
 	ret
-; 0x214f1
 
 AIPlay_ScoopUp: ; 214f1 (8:54f1)
 	ld a, [wAITrainerCardToPlay]
@@ -4062,7 +3994,6 @@ AIPlay_ScoopUp: ; 214f1 (8:54f1)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x21506
 
 AIDecide_ScoopUp: ; 21506 (8:5506)
 	xor a
@@ -4156,7 +4087,7 @@ AIDecide_ScoopUp: ; 21506 (8:5506)
 ; this deck will use Scoop Up on a benched Articuno2.
 ; it checks if the defending Pokemon is a Snorlax,
 ; but interestingly does not check for Muk in both Play Areas.
-; will also use Scoop Up on 
+; will also use Scoop Up on
 .HandleLegendaryArticuno
 ; if less than 3 Play Area Pokemon cards, skip.
 	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
@@ -4236,7 +4167,6 @@ AIDecide_ScoopUp: ; 21506 (8:5506)
 	pop af
 	scf
 	ret
-; 0x215e7
 
 ; this deck will use Scoop Up on a benched Articuno2, Zapdos3 or Molres2.
 ; interestingly, does not check for Muk in both Play Areas.
@@ -4260,7 +4190,6 @@ AIDecide_ScoopUp: ; 21506 (8:5506)
 	call LookForCardIDInPlayArea_Bank8
 	jr c, .check_attached_energy
 	jp .no_carry
-; 0x2160f
 
 AIPlay_Maintenance: ; 2160f (8:560f)
 	ld a, [wCurrentAIFlags]
@@ -4275,7 +4204,6 @@ AIPlay_Maintenance: ; 2160f (8:560f)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x2162c
 
 ; AI logic for playing Maintenance
 AIDecide_Maintenance: ; 2162c (8:562c)
@@ -4359,7 +4287,6 @@ AIDecide_Maintenance: ; 2162c (8:562c)
 ; two cards were found, return carry.
 	scf
 	ret
-; 0x2169a
 
 AIPlay_Recycle: ; 2169a (8:569a)
 	ld a, [wAITrainerCardToPlay]
@@ -4377,7 +4304,6 @@ AIPlay_Recycle: ; 2169a (8:569a)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x216b8
 
 ; lists cards to look for in the Discard Pile.
 ; has priorities for Ghost Deck, and a "default" priority list
@@ -4500,7 +4426,6 @@ AIDecide_Recycle: ; 216b8 (8:56b8)
 	ld a, b
 	ld [wce08 + 4], a
 	jr .loop_2
-; 0x21755
 
 AIPlay_Lass: ; 21755 (8:5755)
 	ld a, [wCurrentAIFlags]
@@ -4511,7 +4436,6 @@ AIPlay_Lass: ; 21755 (8:5755)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x21768
 
 AIDecide_Lass: ; 21768 (8:5768)
 ; skip if player has less than 7 cards in hand
@@ -4542,7 +4466,6 @@ AIDecide_Lass: ; 21768 (8:5768)
 .set_carry
 	scf
 	ret
-; 0x2178f
 
 AIPlay_ItemFinder: ; 2178f (8:578f)
 	ld a, [wCurrentAIFlags]
@@ -4559,7 +4482,6 @@ AIPlay_ItemFinder: ; 2178f (8:578f)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x217b1
 
 ; checks whether there's Energy Removal in Discard Pile.
 ; if so, find duplicate cards in hand to discard
@@ -4635,7 +4557,6 @@ AIDecide_ItemFinder: ; 217b1 (8:57b1)
 .no_carry
 	or a
 	ret
-; 0x21813
 
 AIPlay_Imakuni: ; 21813 (8:5813)
 	ld a, [wAITrainerCardToPlay]
@@ -4643,7 +4564,6 @@ AIPlay_Imakuni: ; 21813 (8:5813)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x2181e
 
 ; only sets carry if Active card is not confused.
 AIDecide_Imakuni: ; 2181e (8:581e)
@@ -4657,7 +4577,6 @@ AIDecide_Imakuni: ; 2181e (8:581e)
 .confused
 	or a
 	ret
-; 0x2182d
 
 AIPlay_Gambler: ; 2182d (8:582d)
 	ld a, [wCurrentAIFlags]
@@ -4695,22 +4614,24 @@ AIPlay_Gambler: ; 2182d (8:582d)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x21875
 
 ; checks whether to play Gambler.
-; aside from Imakuni, all other opponents only
-; play if there's less than 4 cards in the deck.
+; aside from Imakuni?, all other opponents only
+; play this card if Player is running Mewtwo1-only deck.
 AIDecide_Gambler: ; 21875 (8:5875)
 ; Imakuni? has his own routine
 	ld a, [wOpponentDeckID]
 	cp IMAKUNI_DECK_ID
 	jr z, .imakuni
 
-	ld a, [wcda7]
-	and $80
+; check if flag is set for Player using Mewtwo1 only deck
+	ld a, [wAIBarrierFlagCounter]
+	and AI_FLAG_MEWTWO_MILL
 	jr z, .no_carry
 
-; set carry if number of cards in deck <= 4
+; set carry if number of cards in deck <= 4.
+; this is done to counteract the deck out strategy
+; of Mewtwo1 deck, by replenishing the deck with hand cards.
 	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
 	call GetTurnDuelistVariable
 	cp DECK_SIZE - 4
@@ -4728,7 +4649,6 @@ AIDecide_Gambler: ; 21875 (8:5875)
 .set_carry
 	scf
 	ret
-; 0x21899
 
 AIPlay_Revive: ; 21899 (8:5899)
 	ld a, [wAITrainerCardToPlay]
@@ -4738,7 +4658,6 @@ AIPlay_Revive: ; 21899 (8:5899)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x218a9
 
 ; checks certain cards in Discard Pile to use Revive on.
 ; suitable for Muscle For Brains deck only.
@@ -4786,7 +4705,6 @@ AIDecide_Revive: ; 218a9 (8:58a9)
 .no_carry
 	or a
 	ret
-; 0x218d8
 
 AIPlay_PokemonFlute: ; 218d8 (8:58d8)
 	ld a, [wAITrainerCardToPlay]
@@ -4796,7 +4714,6 @@ AIPlay_PokemonFlute: ; 218d8 (8:58d8)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x218e8
 
 AIDecide_PokemonFlute: ; 218e8 (8:58e8)
 ; if player has no Discard Pile, skip.
@@ -4893,7 +4810,6 @@ AIDecide_PokemonFlute: ; 218e8 (8:58e8)
 	ld a, b
 	scf
 	ret
-; 0x21977
 
 AIPlay_ClefairyDollOrMysteriousFossil: ; 21977 (8:5977)
 	ld a, [wAITrainerCardToPlay]
@@ -4901,7 +4817,6 @@ AIPlay_ClefairyDollOrMysteriousFossil: ; 21977 (8:5977)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x21982
 
 ; AI logic for playing Clefairy Doll
 AIDecide_ClefairyDollOrMysteriousFossil: ; 21982 (8:5982)
@@ -4933,7 +4848,6 @@ AIDecide_ClefairyDollOrMysteriousFossil: ; 21982 (8:5982)
 .no_carry
 	or a
 	ret
-; 0x219a6
 
 AIPlay_Pokeball: ; 219a6 (8:59a6)
 	ld a, [wAITrainerCardToPlay]
@@ -4952,7 +4866,6 @@ AIPlay_Pokeball: ; 219a6 (8:59a6)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x219c6
 
 AIDecide_Pokeball: ; 219c6 (8:59c6)
 ; go to the routines associated with deck ID
@@ -5154,7 +5067,6 @@ AIDecide_Pokeball: ; 219c6 (8:59c6)
 	call LookForCardIDInDeck_GivenCardIDInHand
 	ret c
 	ret
-; 0x21b12
 
 AIPlay_ComputerSearch: ; 21b12 (8:5b12)
 	ld a, [wCurrentAIFlags]
@@ -5171,7 +5083,6 @@ AIPlay_ComputerSearch: ; 21b12 (8:5b12)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x21b34
 
 ; checks what Deck ID AI is playing and handle
 ; them in their own routine.
@@ -5511,7 +5422,6 @@ AIDecide_ComputerSearch_FireCharge: ; 21cbb (8:5cbb)
 	ld a, [wce06]
 	scf
 	ret
-; 0x21d1e
 
 AIDecide_ComputerSearch_Anger: ; 21d1e (8:5d1e)
 ; for each of the following cards,
@@ -5572,7 +5482,6 @@ AIDecide_ComputerSearch_Anger: ; 21d1e (8:5d1e)
 	ld a, [wce06]
 	scf
 	ret
-; 0x21d7a
 
 AIPlay_PokemonTrader: ; 21d7a (8:5d7a)
 	ld a, [wAITrainerCardToPlay]
@@ -5584,7 +5493,6 @@ AIPlay_PokemonTrader: ; 21d7a (8:5d7a)
 	ld a, OPPACTION_EXECUTE_TRAINER_EFFECTS
 	bank1call AIMakeDecision
 	ret
-; 0x21d8f
 
 AIDecide_PokemonTrader: ; 21d8f (8:5d8f)
 ; each deck has their own routine for picking
@@ -5683,7 +5591,6 @@ AIDecide_PokemonTrader_LegendaryArticuno: ; 21dd5 (8:5dd5)
 .set_carry
 	scf
 	ret
-; 0x21e24
 
 AIDecide_PokemonTrader_LegendaryDragonite: ; 21e24 (8:5e24)
 ; if has less than 5 cards of energy
@@ -5781,7 +5688,6 @@ AIDecide_PokemonTrader_LegendaryDragonite: ; 21e24 (8:5e24)
 .set_carry
 	scf
 	ret
-; 0x21ec9
 
 AIDecide_PokemonTrader_LegendaryRonald: ; 21ec9 (8:5ec9)
 ; for each of the following cards,
@@ -5852,7 +5758,6 @@ AIDecide_PokemonTrader_LegendaryRonald: ; 21ec9 (8:5ec9)
 .set_carry
 	scf
 	ret
-; 0x21f41
 
 AIDecide_PokemonTrader_BlisteringPokemon: ; 21f41 (8:5f41)
 ; for each of the following cards,
@@ -5898,7 +5803,6 @@ AIDecide_PokemonTrader_BlisteringPokemon: ; 21f41 (8:5f41)
 .set_carry
 	scf
 	ret
-; 0x21f85
 
 AIDecide_PokemonTrader_SoundOfTheWaves: ; 21f85 (8:5f85)
 ; for each of the following cards,
@@ -5975,7 +5879,6 @@ AIDecide_PokemonTrader_SoundOfTheWaves: ; 21f85 (8:5f85)
 .set_carry
 	scf
 	ret
-; 0x2200b
 
 AIDecide_PokemonTrader_PowerGenerator: ; 2200b (8:600b)
 ; for each of the following cards,
@@ -6067,7 +5970,6 @@ AIDecide_PokemonTrader_PowerGenerator: ; 2200b (8:600b)
 .set_carry
 	scf
 	ret
-; 0x220a8
 
 AIDecide_PokemonTrader_FlowerGarden: ; 220a8 (8:60a8)
 ; for each of the following cards,
@@ -6137,7 +6039,6 @@ AIDecide_PokemonTrader_FlowerGarden: ; 220a8 (8:60a8)
 .found
 	scf
 	ret
-; 0x22122
 
 AIDecide_PokemonTrader_StrangePower: ; 22122 (8:6122)
 ; looks for a Pokemon in hand to trade with Mr Mime in deck.
@@ -6155,7 +6056,6 @@ AIDecide_PokemonTrader_StrangePower: ; 22122 (8:6122)
 .no_carry
 	or a
 	ret
-; 0x22133
 
 AIDecide_PokemonTrader_Flamethrower: ; 22133 (8:6133)
 ; for each of the following cards,
@@ -6217,10 +6117,1300 @@ AIDecide_PokemonTrader_Flamethrower: ; 22133 (8:6133)
 .set_carry
 	scf
 	ret
-; 0x2219b
 
-Func_2219b: ; 2219b (8:219b)
-	INCROM $2219b, $227f6
+; handle AI routines for Energy Trans.
+; uses AI_ENERGY_TRANS_* constants as input:
+;	- AI_ENERGY_TRANS_RETREAT: transfers enough Grass Energy cards to
+;	Arena Pokemon for it to be able to pay the Retreat Cost;
+;	- AI_ENERGY_TRANS_ATTACK: transfers enough Grass Energy cards to
+;	Arena Pokemon for it to be able to use its second attack;
+;	- AI_ENERGY_TRANS_TO_BENCH: transfers all Grass Energy cards from
+;	Arena Pokemon to Bench in case Arena card will be KO'd.
+HandleAIEnergyTrans: ; 2219b (8:619b)
+	ld [wce06], a
+
+; choose to randomly return
+	farcall AIChooseRandomlyNotToDoAction
+	ret c
+
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetTurnDuelistVariable
+	dec a
+	ret z ; return if no Bench cards
+
+	ld a, VENUSAUR2
+	call CountPokemonIDInPlayArea
+	ret nc ; return if no Venusaur2 found in own Play Area
+
+	ld a, MUK
+	call CountPokemonIDInBothPlayAreas
+	ret c ; return if Muk found in any Play Area
+
+	ld a, [wce06]
+	cp AI_ENERGY_TRANS_RETREAT
+	jr z, .check_retreat
+
+	cp AI_ENERGY_TRANS_TO_BENCH
+	jp z, AIEnergyTransTransferEnergyToBench
+
+	; AI_ENERGY_TRANS_ATTACK
+	call .CheckEnoughGrassEnergyCardsForAttack
+	ret nc
+	jr .TransferEnergyToArena
+
+.check_retreat
+	call .CheckEnoughGrassEnergyCardsForRetreatCost
+	ret nc
+
+; use Energy Trans to transfer number of Grass energy cards
+; equal to input a from the Bench to the Arena card.
+.TransferEnergyToArena
+	ld [wAINumberOfEnergyTransCards], a
+
+; look for Venusaur2 in Play Area
+; so that its PKMN Power can be used.
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetTurnDuelistVariable
+	dec a
+	ld b, a
+.loop_play_area
+	ld a, DUELVARS_ARENA_CARD
+	add b
+	call GetTurnDuelistVariable
+	ldh [hTempCardIndex_ff9f], a
+	call GetCardIDFromDeckIndex
+	ld a, e
+	cp VENUSAUR2
+	jr z, .use_pkmn_power
+
+	ld a, b
+	or a
+	ret z ; return when finished Play Area loop
+
+	dec b
+	jr .loop_play_area
+
+; use Energy Trans Pkmn Power
+.use_pkmn_power
+	ld a, b
+	ldh [hTemp_ffa0], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+
+	xor a ; PLAY_AREA_ARENA
+	ldh [hAIEnergyTransPlayAreaLocation], a
+	ld a, [wAINumberOfEnergyTransCards]
+	ld d, a
+
+; look for Grass energy cards that
+; are currently attached to a Bench card.
+	ld e, 0
+.loop_deck_locations
+	ld a, DUELVARS_CARD_LOCATIONS
+	add e
+	call GetTurnDuelistVariable
+	and %00011111
+	cp CARD_LOCATION_BENCH_1
+	jr c, .next_card
+
+	and %00001111
+	ldh [hTempPlayAreaLocation_ffa1], a
+
+	ld a, e
+	push de
+	call GetCardIDFromDeckIndex
+	ld a, e
+	pop de
+	cp GRASS_ENERGY
+	jr nz, .next_card
+
+	; store the deck index of energy card
+	ld a, e
+	ldh [hAIEnergyTransEnergyCard], a
+
+	push de
+	ld d, 30
+.small_delay_loop
+	call DoFrame
+	dec d
+	jr nz, .small_delay_loop
+
+	ld a, OPPACTION_6B15
+	bank1call AIMakeDecision
+	pop de
+	dec d
+	jr z, .done_transfer
+
+.next_card
+	inc e
+	ld a, DECK_SIZE
+	cp e
+	jr nz, .loop_deck_locations
+
+; transfer is done, perform delay
+; and return to main scene.
+.done_transfer
+	ld d, 60
+.big_delay_loop
+	call DoFrame
+	dec d
+	jr nz, .big_delay_loop
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	ret
+
+; checks if the Arena card needs energy for its second attack,
+; and if it does, return carry if transferring Grass energy from Bench
+; would be enough to use it. Outputs number of energy cards needed in a.
+.CheckEnoughGrassEnergyCardsForAttack ; 22246 (8:6246)
+	ld a, DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	call GetCardIDFromDeckIndex
+	ld a, e
+	cp EXEGGUTOR
+	jr z, .is_exeggutor
+
+	xor a ; PLAY_AREA_ARENA
+	ldh [hTempPlayAreaLocation_ff9d], a
+	ld a, SECOND_ATTACK
+	ld [wSelectedAttack], a
+	farcall CheckEnergyNeededForAttack
+	jr nc, .attack_false ; return if no energy needed
+
+; check if colorless energy is needed...
+	ld a, c
+	or a
+	jr nz, .count_if_enough
+
+; ...otherwise check if basic energy card is needed
+; and it's grass energy.
+	ld a, b
+	or a
+	jr z, .attack_false
+	ld a, e
+	cp GRASS_ENERGY
+	jr nz, .attack_false
+	ld c, b
+	jr .count_if_enough
+
+.attack_false
+	or a
+	ret
+
+.count_if_enough
+; if there's enough Grass energy cards in Bench
+; to satisfy the attack energy cost, return carry.
+	push bc
+	call .CountGrassEnergyInBench
+	pop bc
+	cp c
+	jr c, .attack_false
+	ld a, c
+	scf
+	ret
+
+.is_exeggutor
+; in case it's Exeggutor in Arena, return carry
+; if there are any Grass energy cards in Bench.
+	call .CountGrassEnergyInBench
+	or a
+	jr z, .attack_false
+
+	scf
+	ret
+
+; outputs in a the number of Grass energy cards
+; currently attached to Bench cards.
+.CountGrassEnergyInBench ; 22286 (8:6286)
+	lb de, 0, 0
+.count_loop
+	ld a, DUELVARS_CARD_LOCATIONS
+	add e
+	call GetTurnDuelistVariable
+	and %00011111
+	cp CARD_LOCATION_BENCH_1
+	jr c, .count_next
+
+; is in bench
+	ld a, e
+	push de
+	call GetCardIDFromDeckIndex
+	ld a, e
+	pop de
+	cp GRASS_ENERGY
+	jr nz, .count_next
+	inc d
+.count_next
+	inc e
+	ld a, DECK_SIZE
+	cp e
+	jr nz, .count_loop
+	ld a, d
+	ret
+
+; returns carry if there are enough Grass energy cards in Bench
+; to satisfy the retreat cost of the Arena card.
+; if so, output the number of energy cards still needed in a.
+.CheckEnoughGrassEnergyCardsForRetreatCost ; 222a9 (8:62a9)
+	xor a ; PLAY_AREA_ARENA
+	ldh [hTempPlayAreaLocation_ff9d], a
+	call GetPlayAreaCardRetreatCost
+	ld b, a
+	ld e, PLAY_AREA_ARENA
+	farcall CountNumberOfEnergyCardsAttached
+	cp b
+	jr nc, .retreat_false ; return if enough to retreat
+
+; see if there's enough Grass energy cards
+; in the Bench to satisfy retreat cost
+	ld c, a
+	ld a, b
+	sub c
+	ld c, a
+	push bc
+	call .CountGrassEnergyInBench
+	pop bc
+	cp c
+	jr c, .retreat_false ; return if less cards than needed
+
+; output number of cards needed to retreat
+	ld a, c
+	scf
+	ret
+.retreat_false
+	or a
+	ret
+
+; AI logic to determine whether to use Energy Trans Pkmn Power
+; to transfer energy cards attached from the Arena Pokemon to
+; some card in the Bench.
+AIEnergyTransTransferEnergyToBench: ; 222ca (8:62ca)
+	xor a ; PLAY_AREA_ARENA
+	ldh [hTempPlayAreaLocation_ff9d], a
+	farcall CheckIfDefendingPokemonCanKnockOut
+	ret nc ; return if Defending can't KO
+
+; processes attacks and see if any attack would be used by AI.
+; if so, return.
+	farcall AIProcessButDontUseAttack
+	ret c
+
+; return if Arena card has no Grass energy cards attached.
+	ld e, PLAY_AREA_ARENA
+	call GetPlayAreaCardAttachedEnergies
+	ld a, [wAttachedEnergies + GRASS]
+	or a
+	ret z
+
+; if no energy card attachment is needed, return.
+	farcall AIProcessButDontPlayEnergy_SkipEvolutionAndArena
+	ret nc
+
+; AI decided that an energy card is needed
+; so look for Venusaur2 in Play Area
+; so that its PKMN Power can be used.
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetTurnDuelistVariable
+	dec a
+	ld b, a
+.loop_play_area
+	ld a, DUELVARS_ARENA_CARD
+	add b
+	call GetTurnDuelistVariable
+	ldh [hTempCardIndex_ff9f], a
+	ld [wAIVenusaur2DeckIndex], a
+	call GetCardIDFromDeckIndex
+	ld a, e
+	cp VENUSAUR2
+	jr z, .use_pkmn_power
+
+	ld a, b
+	or a
+	ret z ; return when Play Area loop is ended
+
+	dec b
+	jr .loop_play_area
+
+; use Energy Trans Pkmn Power
+.use_pkmn_power
+	ld a, b
+	ldh [hTemp_ffa0], a
+	ld [wAIVenusaur2PlayAreaLocation], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+
+; loop for each energy cards that are going to be transferred.
+.loop_energy
+	xor a
+	ldh [hTempPlayAreaLocation_ffa1], a
+	ld a, [wAIVenusaur2PlayAreaLocation]
+	ldh [hTemp_ffa0], a
+
+	; returns when Arena card has no Grass energy cards attached.
+	ld e, PLAY_AREA_ARENA
+	call GetPlayAreaCardAttachedEnergies
+	ld a, [wAttachedEnergies + GRASS]
+	or a
+	jr z, .done_transfer
+
+; look for Grass energy cards that
+; are currently attached to Arena card.
+	ld e, 0
+.loop_deck_locations
+	ld a, DUELVARS_CARD_LOCATIONS
+	add e
+	call GetTurnDuelistVariable
+	cp CARD_LOCATION_ARENA
+	jr nz, .next_card
+
+	ld a, e
+	push de
+	call GetCardIDFromDeckIndex
+	ld a, e
+	pop de
+	cp GRASS_ENERGY
+	jr nz, .next_card
+
+	; store the deck index of energy card
+	ld a, e
+	ldh [hAIEnergyTransEnergyCard], a
+	jr .transfer
+
+.next_card
+	inc e
+	ld a, DECK_SIZE
+	cp e
+	jr nz, .loop_deck_locations
+	jr .done_transfer
+
+.transfer
+; get the Bench card location to transfer Grass energy card to.
+	farcall AIProcessButDontPlayEnergy_SkipEvolutionAndArena
+	jr nc, .done_transfer
+	ldh a, [hTempPlayAreaLocation_ff9d]
+	ldh [hAIEnergyTransPlayAreaLocation], a
+
+	ld d, 30
+.small_delay_loop
+	call DoFrame
+	dec d
+	jr nz, .small_delay_loop
+
+	ld a, [wAIVenusaur2DeckIndex]
+	ldh [hTempCardIndex_ff9f], a
+	ld d, a
+	ld e, FIRST_ATTACK_OR_PKMN_POWER
+	call CopyMoveDataAndDamage_FromDeckIndex
+	ld a, OPPACTION_6B15
+	bank1call AIMakeDecision
+	jr .loop_energy
+
+; transfer is done, perform delay
+; and return to main scene.
+.done_transfer
+	ld d, 60
+.big_delay_loop
+	call DoFrame
+	dec d
+	jr nz, .big_delay_loop
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	ret
+
+; handles AI logic for using some Pkmn Powers.
+; Pkmn Powers handled here are:
+;	- Heal;
+;	- Shift;
+;	- Peek;
+;	- Strange Behavior;
+;	- Curse.
+; returns carry if turn ended.
+HandleAIPkmnPowers: ; 2237f (8:637f)
+	ld a, MUK
+	call CountPokemonIDInBothPlayAreas
+	ccf
+	ret nc ; return no carry if Muk is in play
+
+	farcall AIChooseRandomlyNotToDoAction
+	ccf
+	ret nc ; return no carry if AI randomly decides to
+
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetTurnDuelistVariable
+	ld b, a
+	ld c, PLAY_AREA_ARENA
+	ld a, DUELVARS_ARENA_CARD_STATUS
+	call GetTurnDuelistVariable
+	and CNF_SLP_PRZ
+	jr nz, .next_2
+
+.loop_play_area
+	ld a, DUELVARS_ARENA_CARD
+	add c
+	call GetTurnDuelistVariable
+	ld [wce08], a
+
+	push af
+	push bc
+	ld d, a
+	ld a, c
+	ldh [hTempPlayAreaLocation_ff9d], a
+	ld e, FIRST_ATTACK_OR_PKMN_POWER
+	call CopyMoveDataAndDamage_FromDeckIndex
+	ld a, [wLoadedMoveCategory]
+	cp POKEMON_POWER
+	jr z, .execute_effect
+	pop bc
+	jr .next_3
+
+.execute_effect
+	ld a, EFFECTCMDTYPE_INITIAL_EFFECT_2
+	bank1call TryExecuteEffectCommandFunction
+	pop bc
+	jr c, .next_3
+
+; TryExecuteEffectCommandFunction was successful,
+; so check what Pkmn Power this is through card's ID.
+	pop af
+	call GetCardIDFromDeckIndex
+	ld a, e
+	push bc
+
+; check heal
+	cp VILEPLUME
+	jr nz, .check_shift
+	call HandleAIHeal
+	jr .next_1
+.check_shift
+	cp VENOMOTH
+	jr nz, .check_peek
+	call HandleAIShift
+	jr .next_1
+.check_peek
+	cp MANKEY
+	jr nz, .check_strange_behavior
+	call HandleAIPeek
+	jr .next_1
+.check_strange_behavior
+	cp SLOWBRO
+	jr nz, .check_curse
+	call HandleAIStrangeBehavior
+	jr .next_1
+.check_curse
+	cp GENGAR
+	jr nz, .next_1
+	call z, HandleAICurse
+	jr c, .done
+
+.next_1
+	pop bc
+.next_2
+	inc c
+	ld a, c
+	cp b
+	jr nz, .loop_play_area
+	ret
+
+.next_3
+	pop af
+	jr .next_2
+
+.done
+	pop bc
+	ret
+
+; checks whether AI uses Heal on Pokemon in Play Area.
+; input:
+;	c = Play Area location (PLAY_AREA_*) of Vileplume.
+HandleAIHeal: ; 22402 (8:6402)
+	ld a, c
+	ldh [hTemp_ffa0], a
+	call .CheckHealTarget
+	ret nc ; return if no target to heal
+	push af
+	ld a, [wce08]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	pop af
+	ldh [hAIHealCard], a
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	ret
+
+; finds a target suitable for AI to use Heal on.
+; only heals Arena card if the Defending Pokemon
+; cannot KO it after Heal is used.
+; returns carry if target was found and outputs
+; in a the Play Area location of that card.
+.CheckHealTarget ; 22422 (8:6422)
+; check if Arena card has any damage counters,
+; if not, check Bench instead.
+	ld e, PLAY_AREA_ARENA
+	call GetCardDamage
+	or a
+	jr z, .check_bench
+
+	xor a ; PLAY_AREA_ARENA
+	ldh [hTempPlayAreaLocation_ff9d], a
+	farcall CheckIfDefendingPokemonCanKnockOut
+	jr nc, .set_carry ; return carry if can't KO
+	ld d, a
+	ld a, DUELVARS_ARENA_CARD_HP
+	call GetTurnDuelistVariable
+	ld h, a
+	ld e, PLAY_AREA_ARENA
+	call GetCardDamage
+	; this seems useless since it was already
+	; checked that Arena card has damage,
+	; so card damage is at least 10.
+	cp 10 + 1
+	jr c, .check_remaining
+	ld a, 10
+	; a = min(10, CardDamage)
+
+; checks if Defending Pokemon can still KO
+; if Heal is used on this card.
+; if Heal prevents KO, return carry.
+.check_remaining
+	ld l, a
+	ld a, h ; load remaining HP
+	add l ; add 1 counter to account for heal
+	sub d ; subtract damage of strongest opponent attack
+	jr c, .check_bench
+	jr z, .check_bench
+
+.set_carry
+	xor a ; PLAY_AREA_ARENA
+	scf
+	ret
+
+; check Bench for Pokemon with damage counters
+; and find the one with the most damage.
+.check_bench
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetTurnDuelistVariable
+	ld d, a
+	lb bc, 0, 0
+	ld e, PLAY_AREA_BENCH_1
+.loop_bench
+	ld a, e
+	cp d
+	jr z, .done
+	push bc
+	call GetCardDamage
+	pop bc
+	cp b
+	jr c, .next_bench
+	jr z, .next_bench
+	ld b, a ; store this damage
+	ld c, e ; store this Play Area location
+.next_bench
+	inc e
+	jr .loop_bench
+
+; check if a Pokemon with damage counters was found
+; in the Bench and, if so, return carry.
+.done
+	ld a, c
+	or a
+	jr z, .not_found
+; found
+	scf
+	ret
+.not_found
+	or a
+	ret
+
+; checks whether AI uses Shift.
+; input:
+;	c = Play Area location (PLAY_AREA_*) of Venomoth
+HandleAIShift: ; 22476 (8:6476)
+	ld a, c
+	or a
+	ret nz ; return if Venomoth is not Arena card
+
+	ldh [hTemp_ffa0], a
+	call GetArenaCardColor
+	call TranslateColorToWR
+	ld b, a
+	call SwapTurn
+	call GetArenaCardWeakness
+	ld [wAIDefendingPokemonWeakness], a
+	call SwapTurn
+	or a
+	ret z ; return if Defending Pokemon has no weakness
+	and b
+	ret nz ; return if Venomoth is already Defending card's weakness type
+
+; check whether there's a card in play with
+; the same color as the Player's card weakness
+	call .CheckWhetherTurnDuelistHasColor
+	jr c, .found
+	call SwapTurn
+	call .CheckWhetherTurnDuelistHasColor
+	call SwapTurn
+	ret nc ; return if no color found
+
+.found
+	ld a, [wce08]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+
+; converts WR_* to apropriate color
+	ld a, [wAIDefendingPokemonWeakness]
+	ld b, 0
+.loop_color
+	bit 7, a
+	jr nz, .done
+	inc b
+	rlca
+	jr .loop_color
+
+; use Pkmn Power effect
+.done
+	ld a, b
+	ldh [hAIPkmnPowerEffectParam], a
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	ret
+
+; returns carry if turn Duelist has a Pokemon
+; with same color as wAIDefendingPokemonWeakness.
+.CheckWhetherTurnDuelistHasColor ; 224c6 (8:64c6)
+	ld a, [wAIDefendingPokemonWeakness]
+	ld b, a
+	ld a, DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+.loop_play_area
+	ld a, [hli]
+	cp $ff
+	jr z, .false
+	push bc
+	call GetCardIDFromDeckIndex
+	call GetCardType
+	call TranslateColorToWR
+	pop bc
+	and b
+	jr z, .loop_play_area
+; true
+	scf
+	ret
+.false
+	or a
+	ret
+
+; checks whether AI uses Peek.
+; input:
+;	c = Play Area location (PLAY_AREA_*) of Mankey.
+HandleAIPeek: ; 224e6 (8:64e6)
+	ld a, c
+	ldh [hTemp_ffa0], a
+	ld a, 50
+	call Random
+	cp 3
+	ret nc ; return 47 out of 50 times
+
+; choose what to use Peek on at random
+	ld a, 3
+	call Random
+	or a
+	jr z, .check_player_prizes
+	cp 2
+	jr c, .check_player_hand
+
+; check Player's Deck
+	ld a, DUELVARS_NUMBER_OF_CARDS_NOT_IN_DECK
+	call GetNonTurnDuelistVariable
+	cp DECK_SIZE - 1
+	ret nc ; return if Player has one or no cards in Deck
+	ld a, $ff
+	jr .use_peek
+
+.check_player_prizes
+	ld a, DUELVARS_PRIZES
+	call GetTurnDuelistVariable
+	ld hl, wcda5
+	and [hl]
+	ld [hl], a
+	or a
+	ret z ; return if no prizes
+
+	ld c, a
+	ld b, $1
+	ld d, 0
+.loop_prizes
+	ld a, c
+	and b
+	jr nz, .found_prize
+	sla b
+	inc d
+	jr .loop_prizes
+.found_prize
+; remove this prize's flag from the prize list
+; and use Peek on first one in list (lowest bit set)
+	ld a, c
+	sub b
+	ld [hl], a
+	ld a, $40
+	add d
+	jr .use_peek
+
+.check_player_hand
+	call SwapTurn
+	call CreateHandCardList
+	call SwapTurn
+	or a
+	ret z ; return if no cards in Hand
+; shuffle list and pick the first entry to Peek
+	ld hl, wDuelTempList
+	call CountCardsInDuelTempList
+	call ShuffleCards
+	ld a, [wDuelTempList]
+	or $80
+
+.use_peek
+	push af
+	ld a, [wce08]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	pop af
+	ldh [hAIPkmnPowerEffectParam], a
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	ret
+
+; checks whether AI uses Strange Behavior.
+; input:
+;	c = Play Area location (PLAY_AREA_*) of Slowbro.
+HandleAIStrangeBehavior: ; 2255d (8:655d)
+	ld a, c
+	or a
+	ret z ; return if Slowbro is Arena card
+
+	ldh [hTemp_ffa0], a
+	ld e, PLAY_AREA_ARENA
+	call GetCardDamage
+	or a
+	ret z ; return if Arena card has no damage counters
+
+	ld [wce06], a
+	ldh a, [hTemp_ffa0]
+	add DUELVARS_ARENA_CARD_HP
+	call GetTurnDuelistVariable
+	sub 10
+	ret z ; return if Slowbro has only 10 HP remaining
+
+; if Slowbro can't receive all damage counters,
+; only transfer remaining HP - 10 damage
+	ld hl, wce06
+	cp [hl]
+	jr c, .use_strange_behavior
+	ld a, [hl] ; can receive all damage counters
+
+.use_strange_behavior
+	push af
+	ld a, [wce08]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	xor a
+	ldh [hAIPkmnPowerEffectParam], a
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+	pop af
+
+; loop counters chosen to transfer and use Pkmn Power
+	call ConvertHPToCounters
+	ld e, a
+.loop_counters
+	ld d, 30
+.small_delay_loop
+	call DoFrame
+	dec d
+	jr nz, .small_delay_loop
+	push de
+	ld a, OPPACTION_6B15
+	bank1call AIMakeDecision
+	pop de
+	dec e
+	jr nz, .loop_counters
+
+; return to main scene
+	ld d, 60
+.big_delay_loop
+	call DoFrame
+	dec d
+	jr nz, .big_delay_loop
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	ret
+
+; checks whether AI uses Curse.
+; input:
+;	c = Play Area location (PLAY_AREA_*) of Gengar.
+HandleAICurse: ; 225b5 (8:65b5)
+	ld a, c
+	ldh [hTemp_ffa0], a
+
+; loop Player's Play Area and checks their damage.
+; finds the card with lowest remaining HP and
+; stores its HP and its Play Area location
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetNonTurnDuelistVariable
+	ld d, a
+	ld e, PLAY_AREA_ARENA
+	lb bc, 0, $ff
+	ld h, PLAY_AREA_ARENA
+	call SwapTurn
+.loop_play_area_1
+	push bc
+	call GetCardDamage
+	pop bc
+	or a
+	jr z, .next_1
+
+	inc b
+	ld a, e
+	add DUELVARS_ARENA_CARD_HP
+	push hl
+	call GetTurnDuelistVariable
+	pop hl
+	cp c
+	jr nc, .next_1
+	; lower HP than one stored
+	ld c, a ; store this HP
+	ld h, e ; store this Play Area location
+
+.next_1
+	inc e
+	ld a, e
+	cp d
+	jr nz, .loop_play_area_1 ; reached end of Play Area
+
+	ld a, 1
+	cp b
+	jr nc, .failed ; return if less than 2 cards with damage
+
+; card in Play Area with lowest HP remaining was found.
+; look for another card to take damage counter from.
+	ld a, h
+	ldh [hTempRetreatCostCards], a
+	ld b, a
+	ld a, 10
+	cp c
+	jr z, .hp_10_remaining
+	; if has more than 10 HP remaining,
+	; skip Arena card in choosing which
+	; card to take damage counter from.
+	ld e, PLAY_AREA_BENCH_1
+	jr .second_card
+
+.hp_10_remaining
+	; if Curse can KO, then include
+	; Player's Arena card to take
+	; damage counter from.
+	ld e, PLAY_AREA_ARENA
+
+.second_card
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetTurnDuelistVariable
+	ld d, a
+.loop_play_area_2
+	ld a, e
+	cp b
+	jr z, .next_2 ; skip same Pokemon card
+	push bc
+	call GetCardDamage
+	pop bc
+	jr nz, .use_curse ; has damage counters, choose this card
+.next_2
+	inc e
+	ld a, e
+	cp d
+	jr nz, .loop_play_area_2
+
+.failed
+	call SwapTurn
+	or a
+	ret
+
+.use_curse
+	ld a, e
+	ldh [hAIPkmnPowerEffectParam], a
+	call SwapTurn
+	ld a, [wce08]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	ret
+
+; handles AI logic for Cowardice
+HandleAICowardice: ; 2262d (8:662d)
+	ld a, MUK
+	call CountPokemonIDInBothPlayAreas
+	ret c ; return if there's Muk in play
+
+	farcall AIChooseRandomlyNotToDoAction
+	ret c ; randomly return
+
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetTurnDuelistVariable
+	cp 1
+	ret z ; return if only one Pokemon in Play Area
+
+	ld b, a
+	ld c, PLAY_AREA_ARENA
+	ld a, DUELVARS_ARENA_CARD_STATUS
+	call GetTurnDuelistVariable
+	and CNF_SLP_PRZ
+	jr nz, .next
+.loop
+	ld a, DUELVARS_ARENA_CARD
+	add c
+	call GetTurnDuelistVariable
+	ld [wce08], a
+	call GetCardIDFromDeckIndex
+	ld a, e
+	push bc
+	cp TENTACOOL
+	call z, .CheckWhetherToUseCowardice
+	pop bc
+	jr nc, .next
+
+	dec b ; subtract 1 from number of Pokemon in Play Area
+	ld a, 1
+	cp b
+	ret z ; return if no longer has Bench Pokemon
+	ld c, PLAY_AREA_ARENA ; reset back to Arena
+	jr .loop
+
+.next
+	inc c
+	ld a, c
+	cp b
+	jr nz, .loop
+	ret
+
+; checks whether AI uses Cowardice.
+; return carry if Pkmn Power was used.
+; input:
+;	c = Play Area location (PLAY_AREA_*) of Tentacool.
+.CheckWhetherToUseCowardice ; 22671 (8:6671)
+	ld a, c
+	ldh [hTemp_ffa0], a
+	ld e, a
+	call GetCardDamage
+.asm_22678
+	or a
+	ret z ; return if has no damage counters
+
+	ldh a, [hTemp_ffa0]
+	or a
+	jr nz, .is_benched
+
+	; this part is buggy if AIDecideBenchPokemonToSwitchTo returns carry
+	; but since this was already checked beforehand, this never happens.
+	; so jr c, .asm_22678 can be safely removed.
+	farcall AIDecideBenchPokemonToSwitchTo
+	jr c, .asm_22678 ; bug, this jumps in the middle of damage checking
+	jr .use_cowardice
+.is_benched
+	ld a, $ff
+.use_cowardice
+	push af
+	ld a, [wce08]
+	ldh [hTempCardIndex_ff9f], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	pop af
+	ldh [hAIPkmnPowerEffectParam], a
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	scf
+	ret
+
+; AI logic for Damage Swap to transfer damage from Arena card
+; to a card in Bench with more than 10 HP remaining
+; and with no energy cards attached.
+HandleAIDamageSwap: ; 226a3 (8:66a3)
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetTurnDuelistVariable
+	dec a
+	ret z ; return if no Bench Pokemon
+
+	farcall AIChooseRandomlyNotToDoAction
+	ret c
+
+	ld a, ALAKAZAM
+	call CountPokemonIDInPlayArea
+	ret nc ; return if no Alakazam
+	ld a, MUK
+	call CountPokemonIDInBothPlayAreas
+	ret c ; return if there's Muk in play
+
+; only take damage off certain cards in Arena
+	ld a, DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	call GetCardIDFromDeckIndex
+	ld a, e
+	cp ALAKAZAM
+	jr z, .ok
+	cp KADABRA
+	jr z, .ok
+	cp ABRA
+	jr z, .ok
+	cp MR_MIME
+	ret nz
+
+.ok
+	ld e, PLAY_AREA_ARENA
+	call GetCardDamage
+	or a
+	ret z ; return if no damage
+
+	call ConvertHPToCounters
+	ld [wce06], a
+	ld a, ALAKAZAM
+	ld b, PLAY_AREA_BENCH_1
+	farcall LookForCardIDInPlayArea_Bank5
+	jr c, .is_in_bench
+
+; Alakazam is Arena card
+	xor a
+.is_in_bench
+	ld [wce08], a
+	call .CheckForDamageSwapTargetInBench
+	ret c ; return if not found
+
+; use Damage Swap
+	ld a, [wce08]
+	add DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	ldh [hTempCardIndex_ff9f], a
+	ld a, [wce08]
+	ldh [hTemp_ffa0], a
+	ld a, OPPACTION_USE_PKMN_POWER
+	bank1call AIMakeDecision
+	ld a, OPPACTION_EXECUTE_PKMN_POWER_EFFECT
+	bank1call AIMakeDecision
+
+	ld a, [wce06]
+	ld e, a
+.loop_damage
+	ld d, 30
+.small_delay_loop
+	call DoFrame
+	dec d
+	jr nz, .small_delay_loop
+
+	push de
+	call .CheckForDamageSwapTargetInBench
+	jr c, .no_more_target
+
+	ldh [hTempRetreatCostCards], a
+	xor a ; PLAY_AREA_ARENA
+	ldh [hAIPkmnPowerEffectParam], a
+	ld a, OPPACTION_6B15
+	bank1call AIMakeDecision
+	pop de
+	dec e
+	jr nz, .loop_damage
+
+.done
+; return to main scene
+	ld d, 60
+.big_delay_loop
+	call DoFrame
+	dec d
+	jr nz, .big_delay_loop
+	ld a, OPPACTION_DUEL_MAIN_SCENE
+	bank1call AIMakeDecision
+	ret
+
+.no_more_target
+	pop de
+	jr .done
+
+; looks for a target in the bench to receive damage counters.
+; returns carry if one is found, and outputs remaining HP in a.
+.CheckForDamageSwapTargetInBench ; 2273c (8:673c)
+	ld a, DUELVARS_NUMBER_OF_POKEMON_IN_PLAY_AREA
+	call GetTurnDuelistVariable
+	ld b, a
+	ld c, PLAY_AREA_BENCH_1
+	lb de, $ff, $ff
+
+; look for candidates in bench to get the damage counters
+; only target specific card IDs.
+.loop_bench
+	ld a, c
+	add DUELVARS_ARENA_CARD
+	call GetTurnDuelistVariable
+	push de
+	call GetCardIDFromDeckIndex
+	ld a, e
+	pop de
+	cp CHANSEY
+	jr z, .found_candidate
+	cp KANGASKHAN
+	jr z, .found_candidate
+	cp SNORLAX
+	jr z, .found_candidate
+	cp MR_MIME
+	jr z, .found_candidate
+
+.next_play_area
+	inc c
+	ld a, c
+	cp b
+	jr nz, .loop_bench
+
+; done
+	ld a, e
+	cp $ff
+	jr nz, .no_carry
+	ld a, d
+	cp $ff
+	jr z, .set_carry
+.no_carry
+	or a
+	ret
+
+.found_candidate
+; found a potential candidate to receive damage counters
+	ld a, DUELVARS_ARENA_CARD_HP
+	add c
+	call GetTurnDuelistVariable
+	cp 20
+	jr c, .next_play_area ; ignore cards with only 10 HP left
+
+	ld d, c ; store damage
+	push de
+	push bc
+	ld e, c
+	farcall CountNumberOfEnergyCardsAttached
+	pop bc
+	pop de
+	or a
+	jr nz, .next_play_area ; ignore cards with attached energy
+	ld e, c ; store deck index
+	jr .next_play_area
+
+.set_carry
+	scf
+	ret
+
+; handles AI logic for attaching energy cards
+; in Go Go Rain Dance deck.
+HandleAIGoGoRainDanceEnergy: ; 22790 (8:6790)
+	ld a, [wOpponentDeckID]
+	cp GO_GO_RAIN_DANCE_DECK_ID
+	ret nz ; return if not Go Go Rain Dance deck
+
+	ld a, BLASTOISE
+	call CountPokemonIDInPlayArea
+	ret nc ; return if no Blastoise
+	ld a, MUK
+	call CountPokemonIDInBothPlayAreas
+	ret c ; return if there's Muk in play
+
+; play all the energy cards that is needed.
+.loop
+	farcall AIProcessAndTryToPlayEnergy
+	jr c, .loop
+	ret
+
+; runs through Player's whole deck and
+; sets carry if there's any Pokemon other
+; than Mewtwo1.
+CheckIfPlayerHasPokemonOtherThanMewtwo1: ; 227a9 (8:67a9)
+	call SwapTurn
+	ld e, 0
+.loop_deck
+	ld a, e
+	push de
+	call LoadCardDataToBuffer2_FromDeckIndex
+	pop de
+	ld a, [wLoadedCard2Type]
+	cp TYPE_ENERGY
+	jp nc, .next ; can be a jr
+	ld a, [wLoadedCard2ID]
+	cp MEWTWO1
+	jr nz, .not_mewtwo1
+.next
+	inc e
+	ld a, DECK_SIZE
+	cp e
+	jr nz, .loop_deck
+
+; no carry
+	call SwapTurn
+	or a
+	ret
+
+.not_mewtwo1
+	call SwapTurn
+	scf
+	ret
+
+; returns no carry if, given the Player is using a Mewtwo1 mill deck,
+; the AI already has a Bench fully set up, in which case it
+; will process some Trainer cards in hand (namely Energy Removals).
+; this is used to check whether to skip some normal AI routines
+; this turn and jump right to the attacking phase.
+HandleAIAntiMewtwoDeckStrategy: ; 227d3 (8:67d3)
+; return carry if Player is not playing Mewtwo1 mill deck
+	ld a, [wAIBarrierFlagCounter]
+	bit 7, a
+	jr z, .set_carry
+
+; else, check if there's been less than 2 turns
+; without the Player using Barrier.
+	cp AI_FLAG_MEWTWO_MILL + 2
+	jr c, .count_bench
+
+; if there has been, reset wAIBarrierFlagCounter
+; and return carry.
+	xor a
+	ld [wAIBarrierFlagCounter], a
+	jr .set_carry
+
+; else, check number of Pokemon that are set up in Bench
+; if less than 4, return carry.
+.count_bench
+	farcall CountNumberOfSetUpBenchPokemon
+	cp 4
+	jr c, .set_carry
+
+; if there's at least 4 Pokemon in the Bench set up,
+; process Trainer hand cards of AI_TRAINER_CARD_PHASE_05
+	ld a, AI_TRAINER_CARD_PHASE_05
+	farcall AIProcessHandTrainerCards
+	or a
+	ret
+
+.set_carry
+	scf
+	ret
 
 ; lists in wDuelTempList all the basic energy cards
 ; in card location of a.
@@ -6286,7 +7476,6 @@ FindBasicEnergyCardsInLocation: ; 227f6 (8:67f6)
 .set_carry
 	scf
 	ret
-; 0x2282e
 
 ; returns in a the card index of energy card
 ; attached to Pokémon in Play Area location a,
@@ -6343,7 +7532,6 @@ AIPickEnergyCardToDiscard: ; 2282e (8:682e)
 .no_energy
 	ld a, $ff
 	ret
-; 0x22875
 
 ; returns in a the deck index of an energy card attached to card
 ; in player's Play Area location a to remove.
@@ -6423,7 +7611,6 @@ PickAttachedEnergyCardToRemove: ; 22875 (8:6875)
 .no_energy
 	ld a, $ff
 	ret
-; 0x228d1
 
 ; stores in wTempAI and wCurCardCanAttack the deck indices
 ; of energy cards attached to card in Play Area location a.
@@ -6544,7 +7731,6 @@ PickTwoAttachedEnergyCards: ; 228d1 (8:68d1)
 .not_enough
 	ld a, $ff
 	ret
-; 0x2297b
 
 ; copies $ff terminated buffer from hl to de
 CopyBuffer: ; 2297b (8:697b)
@@ -6554,7 +7740,6 @@ CopyBuffer: ; 2297b (8:697b)
 	ret z
 	inc de
 	jr CopyBuffer
-; 0x22983
 
 ; zeroes a bytes starting at hl
 ClearMemory_Bank8: ; 22983 (8:6983)
@@ -6571,13 +7756,12 @@ ClearMemory_Bank8: ; 22983 (8:6983)
 	pop bc
 	pop af
 	ret
-; 0x22990
 
 ; counts number of energy cards found in hand
 ; and outputs result in a
 ; sets carry if none are found
 ; output:
-; 	a = number of energy cards found
+;	a = number of energy cards found
 CountOppEnergyCardsInHand: ; 22990 (8:6990)
 	farcall CreateEnergyCardListFromHand
 	ret c
@@ -6591,13 +7775,12 @@ CountOppEnergyCardsInHand: ; 22990 (8:6990)
 	ld a, b
 	or a
 	ret
-; 0x229a3
 
 ; converts HP in a to number of equivalent damage counters
 ; input:
-; 	a = HP
+;	a = HP
 ; output:
-; 	a = number of damage counters
+;	a = number of damage counters
 ConvertHPToCounters: ; 229a3 (8:69a3)
 	push bc
 	ld c, 0
@@ -6610,7 +7793,6 @@ ConvertHPToCounters: ; 229a3 (8:69a3)
 	ld a, c
 	pop bc
 	ret
-; 0x229b0
 
 ; calculates floor(hl / 10)
 CalculateWordTensDigit: ; 229b0 (8:69b0)
@@ -6627,7 +7809,6 @@ CalculateWordTensDigit: ; 229b0 (8:69b0)
 	pop de
 	pop bc
 	ret
-; 0x229c1
 
 ; returns in a division of b by a
 CalculateBDividedByA_Bank8: ; 229c1 (8:69c1)
@@ -6645,7 +7826,6 @@ CalculateBDividedByA_Bank8: ; 229c1 (8:69c1)
 	ld a, c
 	pop bc
 	ret
-; 0x229d0
 
 ; returns in a the deck index of the first
 ; instance of card with ID equal to the ID in e
@@ -6684,14 +7864,13 @@ LookForCardIDInLocation: ; 229d0 (8:69d0)
 	ld a, e
 	scf
 	ret
-; 0x229f3
 
 ; return carry if card ID loaded in a is found in hand
 ; and outputs in a the deck index of that card
 ; input:
 ;	a = card ID
 ; output:
-; 	a = card deck index, if found
+;	a = card deck index, if found
 ;	carry set if found
 LookForCardIDInHandList_Bank8: ; 229f3 (8:69f3)
 	ld [wTempCardIDToLook], a
@@ -6713,7 +7892,6 @@ LookForCardIDInHandList_Bank8: ; 229f3 (8:69f3)
 	ldh a, [hTempCardIndex_ff98]
 	scf
 	ret
-; 0x22a10
 
 ; searches in deck for card ID 1 in a, and
 ; if found, searches in Hand/Play Area for card ID 2 in b, and
@@ -6763,7 +7941,6 @@ LookForCardIDInDeck_GivenCardIDInHandAndPlayArea: ; 22a10 (8:6a10)
 .no_carry
 	or a
 	ret
-; 0x22a39
 
 ; returns carry if card ID in a
 ; is found in Play Area or in hand
@@ -6782,7 +7959,6 @@ LookForCardIDInHandAndPlayArea: ; 22a39 (8:6a39)
 	ret c
 	or a
 	ret
-; 0x22a49
 
 ; searches in deck for card ID 1 in a, and
 ; if found, searches in Hand Area for card ID 2 in b, and
@@ -6831,7 +8007,6 @@ LookForCardIDInDeck_GivenCardIDInHand: ; 22a49 (8:6a49)
 .no_carry
 	or a
 	ret
-; 0x22a72
 
 ; returns carry if card ID in a
 ; is found in Play Area, starting with
@@ -6869,7 +8044,6 @@ LookForCardIDInPlayArea_Bank8: ; 22a72 (8:6a72)
 	ld a, b
 	scf
 	ret
-; 0x22a95
 
 ; runs through list avoiding card in e.
 ; removes first card in list not equal to e
@@ -6950,7 +8124,6 @@ RemoveFromListDifferentCardOfGivenType: ; 22a95 (8:6a95)
 	pop hl
 	or a
 	ret
-; 0x22ae0
 
 ; used in Pokemon Trader checks to look for a specific
 ; card in the deck to trade with a card in hand that
@@ -7010,7 +8183,6 @@ LookForCardIDToTradeWithDifferentHandCard: ; 22ae0 (8:6ae0)
 .no_carry
 	or a
 	ret
-; 0x22b1f
 
 ; returns carry if at least one card in the hand
 ; has the card ID of input. Outputs its index.
@@ -7044,7 +8216,6 @@ CheckIfHasCardIDInHand: ; 22b1f (8:6b1f)
 	ldh a, [hTempCardIndex_ff98]
 	scf
 	ret
-; 0x22b45
 
 ; outputs in a total number of Pokemon cards in hand
 ; plus Pokemon in Turn Duelist's Play Area.
@@ -7069,7 +8240,6 @@ CountPokemonCardsInHandAndInPlayArea: ; 22b45 (8:6b45)
 .done
 	ld a, [wTempAI]
 	ret
-; 0x22b6f
 
 ; returns carry if a duplicate Pokemon card is found in hand.
 ; outputs in a the deck index of one of them.
@@ -7124,11 +8294,10 @@ FindDuplicatePokemonCards: ; 22b6f (8:6b6f)
 .no_carry
 	or a
 	ret
-; 0x22bad
 
 ; return carry flag if move is not high recoil.
 Func_22bad: ; 22bad (8:6bad)
-	farcall Func_169ca
+	farcall AIProcessButDontUseAttack
 	ret nc
 	ld a, [wSelectedAttack]
 	ld e, a
@@ -7140,7 +8309,6 @@ Func_22bad: ; 22bad (8:6bad)
 	call CheckLoadedMoveFlag
 	ccf
 	ret
-; 0x22bc6
 
 rept $143a
 	db $ff

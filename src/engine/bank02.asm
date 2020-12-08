@@ -794,7 +794,7 @@ DrawPlayArea_PrizeCards: ; 8464 (2:4464)
 	pop af
 	ret
 
-PrizeCardsCoordinateData_YourOrOppPlayArea: ; 0x84b4 (2:44b4)
+PrizeCardsCoordinateData_YourOrOppPlayArea: ; 84b4 (2:44b4)
 ; x and y coordinates for player prize cards
 .player
 	db 2, 1
@@ -813,7 +813,7 @@ PrizeCardsCoordinateData_YourOrOppPlayArea: ; 0x84b4 (2:44b4)
 	db 5, 15
 
 ; used by Func_833c
-PrizeCardsCoordinateData_2: ; 0x84cc (2:44cc)
+PrizeCardsCoordinateData_2: ; 84cc (2:44cc)
 ; x and y coordinates for player prize cards
 .player
 	db  6, 0
@@ -831,7 +831,7 @@ PrizeCardsCoordinateData_2: ; 0x84cc (2:44cc)
 	db 0, 18
 	db 0, 16
 
-PrizeCardsCoordinateData_InPlayArea: ; 0x84e4 (2:44e4)
+PrizeCardsCoordinateData_InPlayArea: ; 84e4 (2:44e4)
 ; x and y coordinates for player prize cards
 .player
 	db  9, 1
@@ -1826,14 +1826,13 @@ ZeroObjectPositionsWithCopyToggleOn: ; 8aa1 (2:4aa1)
 	ld a, $01
 	ld [wVBlankOAMCopyToggle], a
 	ret
-; 0x8aaa
 
 Func_8aaa: ; 8aaa (2:4aaa)
 	INCROM $8aaa, $8b85
 
 Func_8b85: ; 8b85 (2:4b85)
 	INCROM $8b85, $8c8e
-	
+
 OpenGlossaryScreen_TransitionTable:
 	cursor_transition $08, $28, $00, $04, $01, $05, $05
 	cursor_transition $08, $38, $00, $00, $02, $06, $06
@@ -2171,7 +2170,7 @@ Func_8f8a: ; 8f8a (2:4f8a)
 
 Func_8f9d: ; 8f9d (2:4f9d)
 	call EnableSRAM
-	ld a, [s0b700]
+	ld a, [sCurrentlySelectedDeck]
 	call DisableSRAM
 	ld h, $3
 	ld l, a
@@ -2185,7 +2184,7 @@ Func_8f9d: ; 8f9d (2:4f9d)
 	call FillRectangle
 	ld a, [wceb1]
 	call EnableSRAM
-	ld [s0b700], a
+	ld [sCurrentlySelectedDeck], a
 	call DisableSRAM
 	call Func_9326
 	call GetPointerToDeckName
@@ -2519,7 +2518,7 @@ Func_9168: ; 9168 (2:5168)
 	ld [wceb5], a
 .asm_9214
 	call EnableSRAM
-	ld a, [s0b700]
+	ld a, [sCurrentlySelectedDeck]
 	ld c, a
 	ld b, $0
 	ld d, $2
@@ -2539,7 +2538,7 @@ Func_9168: ; 9168 (2:5168)
 	jr .asm_921f
 .asm_9234
 	ld a, c
-	ld [s0b700], a
+	ld [sCurrentlySelectedDeck], a
 	call DisableSRAM
 	call Func_9326
 	call EnableLCD
@@ -2628,7 +2627,7 @@ Func_9314: ; 9314 (2:5314)
 
 Func_9326: ; 9326 (2:5326)
 	call EnableSRAM
-	ld a, [s0b700]
+	ld a, [sCurrentlySelectedDeck]
 	call DisableSRAM
 	ld h, 3
 	ld l, a
@@ -2643,7 +2642,32 @@ Func_9326: ; 9326 (2:5326)
 	ret
 
 Func_9345: ; 9345 (2:5345)
-	INCROM $9345, $9843
+	INCROM $9345, $9649
+
+; checks if selected deck has any basics
+Func_9649: ; 9649 (2:5649)
+	ld hl, wcf17
+.asm_964c
+	ld a, [hli]
+	ld e, a
+	or a
+	jr z, .asm_9665
+	call LoadCardDataToBuffer1_FromCardID
+	jr c, .asm_9665
+	ld a, [wLoadedCard1Type]
+	and $08
+	jr nz, .asm_964c
+	ld a, [wLoadedCard1Stage]
+	or a
+	jr nz, .asm_964c
+	scf
+	ret
+.asm_9665
+	or a
+	ret
+; 0x9667
+
+	INCROM $9667, $9843
 
 Func_9843: ; 9843 (2:5843)
 	INCROM $9843, $98a6
