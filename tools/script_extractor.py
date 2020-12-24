@@ -188,14 +188,14 @@ def createList(): # this is a func just so all this can go at the bottom
 	("ScriptCommand_MoveActiveNPCByDirection", "w", DO_NOT_QUIT),
 	("ScriptCommand_CloseTextBox", "", DO_NOT_QUIT),
 	("ScriptCommand_GiveBoosterPacks", "bbb", DO_NOT_QUIT),
-	("Func_cf0c", "bj", DO_NOT_QUIT), # more complex behavior too (jumping)
-	("Func_cf12", "bj", DO_NOT_QUIT),
+	("ScriptCommand_CheckIfCardInCollectionOrDecks", "bj", DO_NOT_QUIT), # more complex behavior too (jumping)
+	("ScriptCommand_CheckIfCardInCollection", "bj", DO_NOT_QUIT),
 	("ScriptCommand_GiveCard", "b", DO_NOT_QUIT),
 	("ScriptCommand_TakeCard", "b", DO_NOT_QUIT),
 	("Func_cf53", "w", DO_NOT_QUIT), # more complex behavior too (jumping)
 	("Func_cf7b", "", DO_NOT_QUIT),
-	("Func_cf2d", "bbbb", DO_NOT_QUIT), # more complex behavior too (jumping + ??)
-	("Func_cf96", "w", DO_NOT_QUIT), # only jumps? still needs args to do that though
+	("ScriptCommand_CheckRawAmountOfCardsOwned", "bbbb", DO_NOT_QUIT), # more complex behavior too (jumping + ??)
+	("ScriptCommand_JumpBasedOnFightingClubPupilStatus", "w", DO_NOT_QUIT), # only jumps? still needs args to do that though
 	("Func_cfc6", "b", DO_NOT_QUIT),
 	("Func_cfd4", "", DO_NOT_QUIT),
 	("Func_d00b", "", DO_NOT_QUIT), # includes something with random and extra data
@@ -230,9 +230,9 @@ def createList(): # this is a func just so all this can go at the bottom
 	("Func_d1b3", "", DO_NOT_QUIT),
 	("ScriptCommand_QuitScriptFully", "", QUIT_SPECIAL),
 	("Func_d244", "q", DO_NOT_QUIT),
-	("Func_d24c", "q", DO_NOT_QUIT),
+	("ScriptCommand_ShowMultichoiceTextbox_ChooseDeckToDuelAgainst", "q", DO_NOT_QUIT),
 	("ScriptCommand_OpenDeckMachine", "b", DO_NOT_QUIT),
-	("Func_d271", "q", DO_NOT_QUIT),
+	("ScriptCommand_ShowMultichoiceTextbox_ChooseStarterDeck", "q", DO_NOT_QUIT),
 	("ScriptCommand_EnterMap", "bbood", DO_NOT_QUIT),
 	("ScriptCommand_MoveArbitraryNPC", "bm", DO_NOT_QUIT),
 	("Func_d209", "", DO_NOT_QUIT),
@@ -255,8 +255,8 @@ def createList(): # this is a func just so all this can go at the bottom
 	("ScriptCommand_WaitForSongToFinish", "q", DO_NOT_QUIT),
 	("Func_d435", "b", DO_NOT_QUIT),
 	("ScriptCommand_AskQuestionJumpDefaultYes", "tj", DO_NOT_QUIT),
-	("Func_d2f6", "q", DO_NOT_QUIT),
-	("Func_d317", "", DO_NOT_QUIT),
+	("ScriptCommand_ShowSamNormalMultichoice", "q", DO_NOT_QUIT),
+	("ScriptCommand_ShowSamTutorialMultichoice", "", DO_NOT_QUIT),
 	("Func_d43d", "", DO_NOT_QUIT),
 	("ScriptCommand_EndScriptLoop2", "q", QUIT_CONTINUE_CODE),
 	("ScriptCommand_EndScriptLoop3", "q", QUIT_CONTINUE_CODE),
